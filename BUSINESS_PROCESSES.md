@@ -70,9 +70,182 @@ graph TB
 
 ---
 
-## 3. Business Processes
+## 3. User-Facing Applications (Application Layer)
 
-### 3.1 Reservation Management Process
+Different actors interact with the database through different applications. This section describes the application interfaces and how they connect to the database layer.
+
+### 3.1 System Architecture
+
+```mermaid
+flowchart TB
+    subgraph "User-Facing Applications"
+        A1[Guest Booking Website]
+        A2[Guest Mobile App]
+        A3[Front Desk System]
+        A4[Housekeeping App]
+        A5[Maintenance App]
+        A6[Management Dashboard]
+        A7[POS System]
+    end
+    
+    subgraph "Application Server / API Layer"
+        API[Hotel Management API]
+    end
+    
+    subgraph "Database Layer"
+        DB[(SQL Server Database)]
+        SP[Stored Procedures]
+        VW[Views]
+        TR[Triggers]
+        FN[Functions]
+    end
+    
+    A1 --> API
+    A2 --> API
+    A3 --> API
+    A4 --> API
+    A5 --> API
+    A6 --> API
+    A7 --> API
+    
+    API --> DB
+    DB --> SP
+    DB --> VW
+    DB --> TR
+    DB --> FN
+```
+
+### 3.2 Application Descriptions
+
+| Application | Type | Users | Description |
+|-------------|------|-------|-------------|
+| **Guest Booking Website** | Web Application | Guest/Customer | Public website for searching rooms, making reservations, viewing booking history |
+| **Guest Mobile App** | Mobile App (iOS/Android) | Guest/Customer | Mobile app for reservations, room service requests, loyalty points tracking |
+| **Front Desk System** | Desktop Application | Receptionist, Cashier, Front Desk Manager | Internal system for check-in/out, payments, customer management |
+| **Housekeeping App** | Mobile/Tablet App | Housekeeping Staff, Supervisor | Room cleaning task management, status updates, schedule viewing |
+| **Maintenance App** | Mobile/Tablet App | Maintenance Staff, Manager | Maintenance request management, work orders, completion tracking |
+| **Management Dashboard** | Web Application | All Managers, General Manager | Reports, analytics, KPIs, system configuration |
+| **POS System** | Terminal/Desktop | F&B Staff, Cashier | Point-of-sale for restaurant, bar, and service charges |
+
+### 3.3 Actor-Application-Database Mapping
+
+```mermaid
+flowchart LR
+    subgraph Actors
+        G[Guest]
+        R[Receptionist]
+        C[Cashier]
+        H[Housekeeping]
+        M[Maintenance]
+        F[F&B Staff]
+        MG[Manager]
+    end
+    
+    subgraph Applications
+        WEB[Booking Website]
+        APP[Mobile App]
+        FDS[Front Desk System]
+        HKA[Housekeeping App]
+        MTA[Maintenance App]
+        POS[POS System]
+        DSH[Dashboard]
+    end
+    
+    subgraph "Database Objects"
+        SP1[sp_create_reservation]
+        SP2[sp_process_payment]
+        SP3[sp_add_service_to_reservation]
+        VW1[vw_room_availability]
+        VW2[vw_maintenance_dashboard]
+    end
+    
+    G --> WEB
+    G --> APP
+    R --> FDS
+    C --> FDS
+    H --> HKA
+    M --> MTA
+    F --> POS
+    MG --> DSH
+    
+    WEB --> SP1
+    WEB --> VW1
+    APP --> SP1
+    APP --> SP3
+    FDS --> SP1
+    FDS --> SP2
+    HKA --> VW1
+    MTA --> VW2
+    POS --> SP3
+    DSH --> VW1
+    DSH --> VW2
+```
+
+### 3.4 Detailed Application-Actor-Database Matrix
+
+| Application | Actor | Use Cases | Database Objects Used |
+|-------------|-------|-----------|----------------------|
+| **Guest Booking Website** | Guest | UC-G01, UC-G02, UC-G09 | `sp_create_reservation`, `sp_cancel_reservation`, `vw_room_availability`, `fn_calculate_room_price` |
+| **Guest Mobile App** | Guest | UC-G01, UC-G05, UC-G07, UC-G08, UC-G09, UC-G10 | `sp_create_reservation`, `sp_add_service_to_reservation`, `fn_calculate_total_bill`, `vw_customer_history` |
+| **Front Desk System** | Receptionist | UC-R01 to UC-R10 | `sp_register_customer`, `sp_create_reservation`, `sp_cancel_reservation`, `vw_room_availability`, `vw_customer_history` |
+| **Front Desk System** | Cashier | UC-C01 to UC-C06 | `sp_process_payment`, `sp_generate_invoice`, `vw_outstanding_payments`, `vw_daily_revenue_report` |
+| **Housekeeping App** | Housekeeping Staff | UC-H01 to UC-H06 | `vw_room_availability`, `trg_room_status_history`, `sp_create_maintenance_request` |
+| **Maintenance App** | Maintenance Staff | UC-M01 to UC-M06 | `vw_maintenance_dashboard`, `sp_complete_maintenance`, `fn_get_available_staff` |
+| **POS System** | F&B Staff | UC-F01 to UC-F04 | `sp_add_service_to_reservation`, `vw_popular_services` |
+| **Management Dashboard** | All Managers | UC-MG01 to UC-MG10 | `vw_occupancy_statistics`, `vw_daily_revenue_report`, `vw_employee_performance`, `vw_maintenance_dashboard`, `fn_get_maintenance_statistics` |
+
+### 3.5 Shared Database Objects Explanation
+
+Multiple actors often use the same database objects through different applications. This is by design for:
+
+1. **Consistency**: Same business logic applied regardless of entry point
+2. **Maintainability**: Changes only needed in one place
+3. **Security**: Centralized validation and access control
+4. **Efficiency**: Reusable code reduces development effort
+
+**Example: `sp_create_reservation`**
+```mermaid
+flowchart TB
+    subgraph "Different Entry Points"
+        G1[Guest via Website]
+        G2[Guest via Mobile App]
+        R1[Receptionist via Front Desk]
+        M1[Manager via Dashboard]
+    end
+    
+    subgraph "Same Database Logic"
+        SP[sp_create_reservation]
+        VAL[Validation Rules]
+        CALC[Price Calculation]
+        DISC[Discount Application]
+        UPD[Room Status Update]
+    end
+    
+    G1 --> SP
+    G2 --> SP
+    R1 --> SP
+    M1 --> SP
+    
+    SP --> VAL
+    SP --> CALC
+    SP --> DISC
+    SP --> UPD
+```
+
+**Shared Objects Summary:**
+| Database Object | Used By Applications |
+|----------------|---------------------|
+| `sp_create_reservation` | Website, Mobile App, Front Desk, Dashboard |
+| `sp_process_payment` | Mobile App, Front Desk, POS |
+| `vw_room_availability` | Website, Mobile App, Front Desk, Housekeeping App, Dashboard |
+| `sp_create_maintenance_request` | Mobile App, Front Desk, Housekeeping App, Maintenance App |
+| `vw_customer_history` | Mobile App, Front Desk, Dashboard |
+
+---
+
+## 4. Business Processes
+
+### 4.1 Reservation Management Process
 
 ```mermaid
 flowchart LR
@@ -104,7 +277,7 @@ flowchart LR
 
 ---
 
-### 3.2 Check-In Process
+### 4.2 Check-In Process
 
 ```mermaid
 flowchart LR
@@ -132,7 +305,7 @@ flowchart LR
 
 ---
 
-### 3.3 Check-Out Process
+### 4.3 Check-Out Process
 
 ```mermaid
 flowchart LR
@@ -164,7 +337,7 @@ flowchart LR
 
 ---
 
-### 3.4 Service Request Process
+### 4.4 Service Request Process
 
 ```mermaid
 flowchart LR
@@ -185,7 +358,7 @@ flowchart LR
 
 ---
 
-### 3.5 Payment Process
+### 4.5 Payment Process
 
 ```mermaid
 flowchart LR
@@ -208,7 +381,7 @@ flowchart LR
 
 ---
 
-### 3.6 Reservation Cancellation Process
+### 4.6 Reservation Cancellation Process
 
 ```mermaid
 flowchart LR
@@ -238,7 +411,7 @@ flowchart LR
 
 ---
 
-### 3.7 Housekeeping Process
+### 4.7 Housekeeping Process
 
 ```mermaid
 flowchart LR
@@ -258,7 +431,7 @@ flowchart LR
 
 ---
 
-### 3.8 Maintenance Process
+### 4.8 Maintenance Process
 
 ```mermaid
 flowchart LR
@@ -284,7 +457,7 @@ flowchart LR
 
 ---
 
-### 3.9 Customer Registration Process
+### 4.9 Customer Registration Process
 
 ```mermaid
 flowchart LR
@@ -305,7 +478,7 @@ flowchart LR
 
 ---
 
-### 3.10 Loyalty Program Process
+### 4.10 Loyalty Program Process
 
 ```mermaid
 flowchart TB
@@ -330,7 +503,7 @@ flowchart TB
 
 ---
 
-## 4. Use Case Diagram
+## 5. Use Case Diagram
 
 ```mermaid
 graph TB
@@ -411,9 +584,9 @@ graph TB
 
 ---
 
-## 5. Use Cases by Actor
+## 6. Use Cases by Actor
 
-### 5.1 Guest/Customer Use Cases
+### 6.1 Guest/Customer Use Cases
 
 | UC ID | Use Case | Description | Related DB Objects |
 |-------|----------|-------------|-------------------|
@@ -428,7 +601,7 @@ graph TB
 | UC-G09 | View Loyalty Status | Guest checks points and tier | `vw_customer_history` |
 | UC-G10 | Report Issue | Guest reports room maintenance issue | `sp_create_maintenance_request` |
 
-### 5.2 Receptionist Use Cases
+### 6.2 Receptionist Use Cases
 
 | UC ID | Use Case | Description | Related DB Objects |
 |-------|----------|-------------|-------------------|
@@ -443,7 +616,7 @@ graph TB
 | UC-R09 | Handle Room Change | Transfer guest to different room | RESERVATIONS table |
 | UC-R10 | Create Maintenance Request | Report room issues | `sp_create_maintenance_request` |
 
-### 5.3 Cashier Use Cases
+### 6.3 Cashier Use Cases
 
 | UC ID | Use Case | Description | Related DB Objects |
 |-------|----------|-------------|-------------------|
@@ -454,7 +627,7 @@ graph TB
 | UC-C05 | Apply Discount | Apply promotional/loyalty discounts | `fn_calculate_discount_rate` |
 | UC-C06 | Daily Reconciliation | End-of-day cash reconciliation | `vw_daily_revenue_report` |
 
-### 5.4 Housekeeping Staff Use Cases
+### 6.4 Housekeeping Staff Use Cases
 
 | UC ID | Use Case | Description | Related DB Objects |
 |-------|----------|-------------|-------------------|
@@ -465,7 +638,7 @@ graph TB
 | UC-H05 | Update Room Status | Change room status | `trg_room_status_history` |
 | UC-H06 | View Schedule | Check work shift assignments | EMPLOYEE_SHIFTS table |
 
-### 5.5 Maintenance Staff Use Cases
+### 6.5 Maintenance Staff Use Cases
 
 | UC ID | Use Case | Description | Related DB Objects |
 |-------|----------|-------------|-------------------|
@@ -476,7 +649,7 @@ graph TB
 | UC-M05 | Update Priority | Escalate/de-escalate urgency | MAINTENANCE_REQUESTS table |
 | UC-M06 | View Schedule | Check work shift assignments | EMPLOYEE_SHIFTS table |
 
-### 5.6 Manager Use Cases
+### 6.6 Manager Use Cases
 
 | UC ID | Use Case | Description | Related DB Objects |
 |-------|----------|-------------|-------------------|
@@ -491,7 +664,7 @@ graph TB
 | UC-MG09 | View Service Analytics | Monitor service usage trends | `vw_popular_services` |
 | UC-MG10 | View Maintenance Stats | Monitor maintenance metrics | `fn_get_maintenance_statistics` |
 
-### 5.7 System (Automated) Use Cases
+### 6.7 System (Automated) Use Cases
 
 | UC ID | Use Case | Description | Related DB Objects |
 |-------|----------|-------------|-------------------|
@@ -508,7 +681,7 @@ graph TB
 
 ---
 
-## 6. Entity Relationship Diagram
+## 7. Entity Relationship Diagram
 
 ```mermaid
 erDiagram
@@ -537,7 +710,7 @@ erDiagram
 
 ---
 
-## 7. Database Objects Mapping
+## 8. Database Objects Mapping
 
 | Process | Procedures | Views | Triggers | Functions |
 |---------|------------|-------|----------|-----------|
