@@ -1,5 +1,5 @@
 -- =============================================
--- MEMBER 3: CUSTOMER & SERVICE MANAGEMENT
+-- Ninh: CUSTOMER & SERVICE MANAGEMENT
 -- CURSOR PROCEDURES (2 CURSORS)
 -- =============================================
 -- Business Process: Complete Customer & Service Lifecycle
@@ -304,5 +304,5 @@ BEGIN
 END;
 GO
 
-PRINT 'Member 3 Cursor Procedures created successfully.';
+PRINT 'Ninh Cursor Procedures created successfully.';
 GO

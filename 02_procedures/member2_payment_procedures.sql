@@ -1,5 +1,5 @@
 -- =============================================
--- MEMBER 2: PAYMENT & FINANCIAL MANAGEMENT
+-- Khanh: PAYMENT & FINANCIAL MANAGEMENT
 -- STORED PROCEDURES
 -- =============================================
 
@@ -325,5 +325,5 @@ BEGIN
 END;
 GO
 
-PRINT 'Member 2 Procedures created successfully.';
+PRINT 'Khanh Procedures created successfully.';
 GO

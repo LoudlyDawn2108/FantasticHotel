@@ -61,7 +61,7 @@ Each member has: **2 Procedures** + **2 Cursors** + **2 Views** + **2 Triggers**
 
 ---
 
-### Member 1: Reservation & Room Management
+### Phuc: Reservation & Room Management
 **Business Process:** Complete Reservation Lifecycle
 
 | Type | Name | Description |
@@ -80,7 +80,7 @@ Each member has: **2 Procedures** + **2 Cursors** + **2 Views** + **2 Triggers**
 
 ---
 
-### Member 2: Payment & Financial Management
+### Khanh: Payment & Financial Management
 **Business Process:** Complete Payment Lifecycle
 
 | Type | Name | Description |
@@ -99,7 +99,7 @@ Each member has: **2 Procedures** + **2 Cursors** + **2 Views** + **2 Triggers**
 
 ---
 
-### Member 3: Customer & Service Management
+### Ninh: Customer & Service Management
 **Business Process:** Complete Customer & Service Lifecycle
 
 | Type | Name | Description |
@@ -117,7 +117,7 @@ Each member has: **2 Procedures** + **2 Cursors** + **2 Views** + **2 Triggers**
 
 ---
 
-### Member 4: Operations & HR Management
+### Tung: Operations & HR Management
 **Business Process:** Complete Operations Lifecycle
 
 | Type | Name | Description |
@@ -152,10 +152,10 @@ Each member has: **2 Procedures** + **2 Cursors** + **2 Views** + **2 Triggers**
 
 Each member's objects form a **complete, cohesive business process**:
 
-1. **Member 1**: Reservation lifecycle from inquiry → booking → check-in → no-show handling
-2. **Member 2**: Payment lifecycle from billing → payment → reminders → reporting
-3. **Member 3**: Customer lifecycle from registration → services → tier upgrades → analytics
-4. **Member 4**: Operations lifecycle from issue → assignment → completion → HR scheduling
+1. **Phuc**: Reservation lifecycle from inquiry → booking → check-in → no-show handling
+2. **Khanh**: Payment lifecycle from billing → payment → reminders → reporting
+3. **Ninh**: Customer lifecycle from registration → services → tier upgrades → analytics
+4. **Tung**: Operations lifecycle from issue → assignment → completion → HR scheduling
 
 See `MEMBER_BUSINESS_PROCESS_VERIFICATION.md` for detailed process flow diagrams.
 

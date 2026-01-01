@@ -1,5 +1,5 @@
 -- =============================================
--- MEMBER 2: PAYMENT & FINANCIAL MANAGEMENT
+-- Khanh: PAYMENT & FINANCIAL MANAGEMENT
 -- TRIGGERS
 -- =============================================
 
@@ -212,5 +212,5 @@ BEGIN
 END;
 GO
 
-PRINT 'Member 2 Triggers created successfully.';
+PRINT 'Khanh Triggers created successfully.';
 GO

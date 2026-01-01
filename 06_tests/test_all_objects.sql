@@ -173,9 +173,9 @@ PRINT '========================================';
 PRINT '';
 
 -- =============================================
--- MEMBER 1 CURSORS
+-- Phuc CURSORS
 -- =============================================
-PRINT '--- Member 1 Cursor Procedures ---';
+PRINT '--- Phuc Cursor Procedures ---';
 PRINT '';
 
 -- Test sp_process_daily_checkins
@@ -203,10 +203,10 @@ PRINT 'Result: ' + @noshow_message;
 GO
 
 -- =============================================
--- MEMBER 2 CURSORS
+-- Khanh CURSORS
 -- =============================================
 PRINT '';
-PRINT '--- Member 2 Cursor Procedures ---';
+PRINT '--- Khanh Cursor Procedures ---';
 PRINT '';
 
 -- Test sp_send_payment_reminders
@@ -237,10 +237,10 @@ PRINT @revenue_output;
 GO
 
 -- =============================================
--- MEMBER 3 CURSORS
+-- Ninh CURSORS
 -- =============================================
 PRINT '';
-PRINT '--- Member 3 Cursor Procedures ---';
+PRINT '--- Ninh Cursor Procedures ---';
 PRINT '';
 
 -- Test sp_process_loyalty_tier_upgrades
@@ -268,10 +268,10 @@ PRINT @service_output;
 GO
 
 -- =============================================
--- MEMBER 4 CURSORS
+-- Tung CURSORS
 -- =============================================
 PRINT '';
-PRINT '--- Member 4 Cursor Procedures ---';
+PRINT '--- Tung Cursor Procedures ---';
 PRINT '';
 
 -- Test sp_auto_assign_maintenance_tasks
@@ -363,10 +363,10 @@ PRINT 'ALL TESTS COMPLETED';
 PRINT '========================================';
 PRINT '';
 PRINT 'Summary of Cursor Procedures Tested:';
-PRINT '  Member 1: sp_process_daily_checkins, sp_process_noshow_reservations';
-PRINT '  Member 2: sp_send_payment_reminders, sp_generate_monthly_revenue_summary';
-PRINT '  Member 3: sp_process_loyalty_tier_upgrades, sp_generate_service_usage_report';
-PRINT '  Member 4: sp_auto_assign_maintenance_tasks, sp_generate_employee_shift_schedule';
+PRINT '  Phuc: sp_process_daily_checkins, sp_process_noshow_reservations';
+PRINT '  Khanh: sp_send_payment_reminders, sp_generate_monthly_revenue_summary';
+PRINT '  Ninh: sp_process_loyalty_tier_upgrades, sp_generate_service_usage_report';
+PRINT '  Tung: sp_auto_assign_maintenance_tasks, sp_generate_employee_shift_schedule';
 PRINT '';
 PRINT 'Total: 8 Cursor Procedures (2 per member)';
 GO

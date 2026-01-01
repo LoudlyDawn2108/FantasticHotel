@@ -1,5 +1,5 @@
 -- =============================================
--- MEMBER 2: PAYMENT & FINANCIAL MANAGEMENT
+-- Khanh: PAYMENT & FINANCIAL MANAGEMENT
 -- CURSOR PROCEDURES (2 CURSORS)
 -- =============================================
 -- Business Process: Complete Payment & Financial Lifecycle
@@ -317,5 +317,5 @@ BEGIN
 END;
 GO
 
-PRINT 'Member 2 Cursor Procedures created successfully.';
+PRINT 'Khanh Cursor Procedures created successfully.';
 GO

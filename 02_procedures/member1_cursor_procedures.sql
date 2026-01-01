@@ -1,5 +1,5 @@
 -- =============================================
--- MEMBER 1: RESERVATION & ROOM MANAGEMENT
+-- Phuc: RESERVATION & ROOM MANAGEMENT
 -- CURSOR PROCEDURES (2 CURSORS)
 -- =============================================
 -- Business Process: Complete Reservation Lifecycle
@@ -265,5 +265,5 @@ BEGIN
 END;
 GO
 
-PRINT 'Member 1 Cursor Procedures created successfully.';
+PRINT 'Phuc Cursor Procedures created successfully.';
 GO

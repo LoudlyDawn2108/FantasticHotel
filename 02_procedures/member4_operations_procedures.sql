@@ -1,5 +1,5 @@
 -- =============================================
--- MEMBER 4: OPERATIONS & HR MANAGEMENT
+-- Tung: OPERATIONS & HR MANAGEMENT
 -- STORED PROCEDURES
 -- =============================================
 
@@ -308,5 +308,5 @@ BEGIN
 END;
 GO
 
-PRINT 'Member 4 Procedures created successfully.';
+PRINT 'Tung Procedures created successfully.';
 GO

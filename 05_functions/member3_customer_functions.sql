@@ -1,5 +1,5 @@
 -- =============================================
--- MEMBER 3: CUSTOMER & SERVICE MANAGEMENT
+-- Ninh: CUSTOMER & SERVICE MANAGEMENT
 -- FUNCTIONS
 -- =============================================
 
@@ -7,7 +7,7 @@ USE HotelManagement;
 GO
 
 -- =============================================
--- FUNCTION 1: fn_get_customer_tier (already created by Member 2, but included here for reference)
+-- FUNCTION 1: fn_get_customer_tier (already created by Khanh, but included here for reference)
 -- Returns customer's membership tier based on total spending
 -- =============================================
 -- Note: This function was already created in member2_payment_functions.sql
@@ -183,5 +183,5 @@ RETURN
 );
 GO
 
-PRINT 'Member 3 Functions created successfully.';
+PRINT 'Ninh Functions created successfully.';
 GO

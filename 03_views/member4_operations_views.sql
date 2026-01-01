@@ -1,5 +1,5 @@
 -- =============================================
--- MEMBER 4: OPERATIONS & HR MANAGEMENT
+-- Tung: OPERATIONS & HR MANAGEMENT
 -- VIEWS
 -- =============================================
 
@@ -180,5 +180,5 @@ INNER JOIN DEPARTMENTS d ON e.department_id = d.department_id
 WHERE e.is_active = 1;
 GO
 
-PRINT 'Member 4 Views created successfully.';
+PRINT 'Tung Views created successfully.';
 GO

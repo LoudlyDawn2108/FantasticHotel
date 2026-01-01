@@ -1,5 +1,5 @@
 -- =============================================
--- MEMBER 1: RESERVATION & ROOM MANAGEMENT
+-- Phuc: RESERVATION & ROOM MANAGEMENT
 -- VIEWS
 -- =============================================
 
@@ -162,5 +162,5 @@ FROM DailyStats
 OPTION (MAXRECURSION 30);
 GO
 
-PRINT 'Member 1 Views created successfully.';
+PRINT 'Phuc Views created successfully.';
 GO

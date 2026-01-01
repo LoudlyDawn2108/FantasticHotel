@@ -1,5 +1,5 @@
 -- =============================================
--- MEMBER 3: CUSTOMER & SERVICE MANAGEMENT
+-- Ninh: CUSTOMER & SERVICE MANAGEMENT
 -- STORED PROCEDURES
 -- =============================================
 
@@ -293,5 +293,5 @@ BEGIN
 END;
 GO
 
-PRINT 'Member 3 Procedures created successfully.';
+PRINT 'Ninh Procedures created successfully.';
 GO

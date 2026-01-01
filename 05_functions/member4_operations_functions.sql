@@ -1,5 +1,5 @@
 -- =============================================
--- MEMBER 4: OPERATIONS & HR MANAGEMENT
+-- Tung: OPERATIONS & HR MANAGEMENT
 -- FUNCTIONS
 -- =============================================
 
@@ -202,5 +202,5 @@ RETURN
 );
 GO
 
-PRINT 'Member 4 Functions created successfully.';
+PRINT 'Tung Functions created successfully.';
 GO

@@ -1,5 +1,5 @@
 -- =============================================
--- MEMBER 1: RESERVATION & ROOM MANAGEMENT
+-- Phuc: RESERVATION & ROOM MANAGEMENT
 -- FUNCTIONS
 -- =============================================
 
@@ -169,5 +169,5 @@ BEGIN
 END;
 GO
 
-PRINT 'Member 1 Functions created successfully.';
+PRINT 'Phuc Functions created successfully.';
 GO

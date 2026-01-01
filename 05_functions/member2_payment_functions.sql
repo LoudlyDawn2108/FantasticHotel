@@ -1,5 +1,5 @@
 -- =============================================
--- MEMBER 2: PAYMENT & FINANCIAL MANAGEMENT
+-- Khanh: PAYMENT & FINANCIAL MANAGEMENT
 -- FUNCTIONS
 -- =============================================
 
@@ -172,5 +172,5 @@ BEGIN
 END;
 GO
 
-PRINT 'Member 2 Functions created successfully.';
+PRINT 'Khanh Functions created successfully.';
 GO

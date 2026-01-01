@@ -1,5 +1,5 @@
 -- =============================================
--- MEMBER 4: OPERATIONS & HR MANAGEMENT
+-- Tung: OPERATIONS & HR MANAGEMENT
 -- CURSOR PROCEDURES (2 CURSORS)
 -- =============================================
 -- Business Process: Complete Operations & HR Lifecycle
@@ -342,5 +342,5 @@ BEGIN
 END;
 GO
 
-PRINT 'Member 4 Cursor Procedures created successfully.';
+PRINT 'Tung Cursor Procedures created successfully.';
 GO

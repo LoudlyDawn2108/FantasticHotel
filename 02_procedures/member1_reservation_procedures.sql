@@ -1,5 +1,5 @@
 -- =============================================
--- MEMBER 1: RESERVATION & ROOM MANAGEMENT
+-- Phuc: RESERVATION & ROOM MANAGEMENT
 -- STORED PROCEDURES
 -- =============================================
 
@@ -313,5 +313,5 @@ BEGIN
 END;
 GO
 
-PRINT 'Member 1 Procedures created successfully.';
+PRINT 'Phuc Procedures created successfully.';
 GO

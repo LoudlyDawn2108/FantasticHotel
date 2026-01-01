@@ -1,5 +1,5 @@
 -- =============================================
--- MEMBER 1: RESERVATION & ROOM MANAGEMENT
+-- Phuc: RESERVATION & ROOM MANAGEMENT
 -- TRIGGERS
 -- =============================================
 
@@ -228,5 +228,5 @@ BEGIN
 END;
 GO
 
-PRINT 'Member 1 Triggers created successfully.';
+PRINT 'Phuc Triggers created successfully.';
 GO

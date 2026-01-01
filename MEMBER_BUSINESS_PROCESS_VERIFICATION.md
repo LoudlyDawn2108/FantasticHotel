@@ -4,7 +4,7 @@ This document verifies that each team member's SQL objects (procedures, views, t
 
 ---
 
-## Member 1: Reservation & Room Management
+## Phuc: Reservation & Room Management
 ### Business Process: Complete Reservation Lifecycle
 
 ```mermaid
@@ -21,7 +21,7 @@ flowchart TB
         I --> J[No-Show Processing]
     end
     
-    subgraph "Member 1 Objects"
+    subgraph "Phuc Objects"
         B -.-> FN1[fn_check_room_availability]
         B -.-> VW1[vw_room_availability]
         C -.-> FN2[fn_calculate_room_price]
@@ -64,7 +64,7 @@ flowchart TB
 
 ---
 
-## Member 2: Payment & Financial Management
+## Khanh: Payment & Financial Management
 ### Business Process: Complete Payment Lifecycle
 
 ```mermaid
@@ -79,7 +79,7 @@ flowchart TB
         G --> H[Monthly Reporting]
     end
     
-    subgraph "Member 2 Objects"
+    subgraph "Khanh Objects"
         B -.-> FN1[fn_calculate_total_bill]
         C -.-> SP2[sp_generate_invoice - has cursor]
         D -.-> SP1[sp_process_payment]
@@ -120,7 +120,7 @@ flowchart TB
 
 ---
 
-## Member 3: Customer & Service Management
+## Ninh: Customer & Service Management
 ### Business Process: Complete Customer & Service Lifecycle
 
 ```mermaid
@@ -136,7 +136,7 @@ flowchart TB
         H --> I[Service Analytics]
     end
     
-    subgraph "Member 3 Objects"
+    subgraph "Ninh Objects"
         B -.-> SP1[sp_register_customer]
         D -.-> VW2[vw_popular_services]
         E -.-> SP2[sp_add_service_to_reservation]
@@ -178,7 +178,7 @@ flowchart TB
 
 ---
 
-## Member 4: Operations & HR Management
+## Tung: Operations & HR Management
 ### Business Process: Complete Operations Lifecycle
 
 ```mermaid
@@ -193,7 +193,7 @@ flowchart TB
         G --> H[Generate Schedules]
     end
     
-    subgraph "Member 4 Objects"
+    subgraph "Tung Objects"
         B -.-> SP1[sp_create_maintenance_request]
         B -.-> TR2[trg_high_priority_maintenance]
         C -.-> CUR1[sp_auto_assign_maintenance_tasks - CURSOR]
@@ -237,10 +237,10 @@ flowchart TB
 
 | Member | Procedures | Views | Triggers | Functions | Cursors | Total |
 |--------|------------|-------|----------|-----------|---------|-------|
-| **Member 1** | 2 | 2 | 2 | 3 | **2** | 11 |
-| **Member 2** | 2 (+1 with cursor) | 2 | 2 | 3 | **2** | 11+ |
-| **Member 3** | 2 | 2 | 2 | 3 | **2** | 11 |
-| **Member 4** | 2 | 2 | 2 | 3 | **2** | 11 |
+| **Phuc** | 2 | 2 | 2 | 3 | **2** | 11 |
+| **Khanh** | 2 (+1 with cursor) | 2 | 2 | 3 | **2** | 11+ |
+| **Ninh** | 2 | 2 | 2 | 3 | **2** | 11 |
+| **Tung** | 2 | 2 | 2 | 3 | **2** | 11 |
 | **TOTAL** | 8 | 8 | 8 | 12 | **8** | 44 |
 
 ---

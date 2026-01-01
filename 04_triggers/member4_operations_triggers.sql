@@ -1,5 +1,5 @@
 -- =============================================
--- MEMBER 4: OPERATIONS & HR MANAGEMENT
+-- Tung: OPERATIONS & HR MANAGEMENT
 -- TRIGGERS
 -- =============================================
 
@@ -228,5 +228,5 @@ BEGIN
 END;
 GO
 
-PRINT 'Member 4 Triggers created successfully.';
+PRINT 'Tung Triggers created successfully.';
 GO

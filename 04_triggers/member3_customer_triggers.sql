@@ -1,5 +1,5 @@
 -- =============================================
--- MEMBER 3: CUSTOMER & SERVICE MANAGEMENT
+-- Ninh: CUSTOMER & SERVICE MANAGEMENT
 -- TRIGGERS
 -- =============================================
 
@@ -229,5 +229,5 @@ BEGIN
 END;
 GO
 
-PRINT 'Member 3 Triggers created successfully.';
+PRINT 'Ninh Triggers created successfully.';
 GO

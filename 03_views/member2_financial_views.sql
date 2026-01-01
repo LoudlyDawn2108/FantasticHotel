@@ -1,5 +1,5 @@
 -- =============================================
--- MEMBER 2: PAYMENT & FINANCIAL MANAGEMENT
+-- Khanh: PAYMENT & FINANCIAL MANAGEMENT
 -- VIEWS
 -- =============================================
 
@@ -163,5 +163,5 @@ AND r.status NOT IN ('Cancelled', 'NoShow')  -- Exclude cancelled
 ORDER BY (r.total_amount - r.paid_amount) DESC;
 GO
 
-PRINT 'Member 2 Views created successfully.';
+PRINT 'Khanh Views created successfully.';
 GO

@@ -1,5 +1,5 @@
 -- =============================================
--- MEMBER 3: CUSTOMER & SERVICE MANAGEMENT
+-- Ninh: CUSTOMER & SERVICE MANAGEMENT
 -- VIEWS
 -- =============================================
 
@@ -207,5 +207,5 @@ FROM SERVICES s
 INNER JOIN SERVICE_CATEGORIES sc ON s.category_id = sc.category_id;
 GO
 
-PRINT 'Member 3 Views created successfully.';
+PRINT 'Ninh Views created successfully.';
 GO
