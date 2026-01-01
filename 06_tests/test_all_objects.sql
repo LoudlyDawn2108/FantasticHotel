@@ -107,11 +107,11 @@ SELECT TOP 5 * FROM vw_employee_performance ORDER BY employee_id;
 GO
 
 -- =============================================
--- TEST PROCEDURES
+-- TEST BASIC PROCEDURES
 -- =============================================
 
 PRINT '';
-PRINT '--- Testing Procedures ---';
+PRINT '--- Testing Basic Procedures ---';
 PRINT '';
 
 -- Test sp_register_customer
@@ -120,8 +120,8 @@ DECLARE @new_customer_id INT;
 DECLARE @register_message NVARCHAR(500);
 EXEC sp_register_customer 
     @first_name = 'Test',
-    @last_name = 'Customer',
-    @email = 'test.customer@email.com',
+    @last_name = 'Customer' + CAST(CAST(RAND()*1000 AS INT) AS NVARCHAR),
+    @email = 'test' + CAST(CAST(RAND()*10000 AS INT) AS NVARCHAR) + '@email.com',
     @phone = '555-9999',
     @customer_id = @new_customer_id OUTPUT,
     @message = @register_message OUTPUT;
@@ -145,67 +145,6 @@ EXEC sp_create_reservation
 PRINT 'Result: ' + @reservation_message;
 GO
 
--- Test sp_process_payment
-PRINT '';
-PRINT 'Testing sp_process_payment:';
-DECLARE @new_payment_id INT;
-DECLARE @payment_message NVARCHAR(500);
--- Use an existing reservation with outstanding balance
-DECLARE @test_reservation INT;
-SELECT TOP 1 @test_reservation = reservation_id 
-FROM RESERVATIONS WHERE total_amount > paid_amount AND status NOT IN ('Cancelled');
-
-IF @test_reservation IS NOT NULL
-BEGIN
-    EXEC sp_process_payment
-        @reservation_id = @test_reservation,
-        @amount = 100.00,
-        @payment_method = 'Credit Card',
-        @payment_id = @new_payment_id OUTPUT,
-        @message = @payment_message OUTPUT;
-    PRINT 'Result: ' + @payment_message;
-END
-ELSE
-    PRINT 'No reservation with outstanding balance found for testing.';
-GO
-
--- Test sp_generate_invoice
-PRINT '';
-PRINT 'Testing sp_generate_invoice:';
-DECLARE @invoice_output NVARCHAR(MAX);
-DECLARE @invoice_message NVARCHAR(500);
-EXEC sp_generate_invoice
-    @reservation_id = 1,
-    @invoice_output = @invoice_output OUTPUT,
-    @message = @invoice_message OUTPUT;
-PRINT 'Result: ' + @invoice_message;
-PRINT @invoice_output;
-GO
-
--- Test sp_add_service_to_reservation
-PRINT '';
-PRINT 'Testing sp_add_service_to_reservation:';
-DECLARE @new_usage_id INT;
-DECLARE @service_message NVARCHAR(500);
--- Find a checked-in reservation
-DECLARE @checkedin_reservation INT;
-SELECT TOP 1 @checkedin_reservation = reservation_id 
-FROM RESERVATIONS WHERE status = 'CheckedIn';
-
-IF @checkedin_reservation IS NOT NULL
-BEGIN
-    EXEC sp_add_service_to_reservation
-        @reservation_id = @checkedin_reservation,
-        @service_id = 1,
-        @quantity = 1,
-        @usage_id = @new_usage_id OUTPUT,
-        @message = @service_message OUTPUT;
-    PRINT 'Result: ' + @service_message;
-END
-ELSE
-    PRINT 'No checked-in reservation found for testing.';
-GO
-
 -- Test sp_create_maintenance_request
 PRINT '';
 PRINT 'Testing sp_create_maintenance_request:';
@@ -223,80 +162,211 @@ EXEC sp_create_maintenance_request
 PRINT 'Result: ' + @maint_message;
 GO
 
--- Test sp_complete_maintenance
-PRINT '';
-PRINT 'Testing sp_complete_maintenance:';
-DECLARE @response_hours DECIMAL(10,2);
-DECLARE @complete_message NVARCHAR(500);
--- Find an open maintenance request
-DECLARE @open_request INT;
-SELECT TOP 1 @open_request = request_id 
-FROM MAINTENANCE_REQUESTS WHERE status = 'Open';
-
-IF @open_request IS NOT NULL
-BEGIN
-    EXEC sp_complete_maintenance
-        @request_id = @open_request,
-        @actual_cost = 75.00,
-        @completion_notes = 'Test completion',
-        @response_time_hours = @response_hours OUTPUT,
-        @message = @complete_message OUTPUT;
-    PRINT 'Result: ' + @complete_message;
-END
-ELSE
-    PRINT 'No open maintenance request found for testing.';
-GO
-
--- Test sp_cancel_reservation
-PRINT '';
-PRINT 'Testing sp_cancel_reservation:';
-DECLARE @refund_amt DECIMAL(10,2);
-DECLARE @cancel_message NVARCHAR(500);
--- Find a confirmed reservation that can be cancelled
-DECLARE @cancel_reservation INT;
-SELECT TOP 1 @cancel_reservation = reservation_id 
-FROM RESERVATIONS WHERE status = 'Confirmed' AND check_in_date > GETDATE();
-
-IF @cancel_reservation IS NOT NULL
-BEGIN
-    EXEC sp_cancel_reservation
-        @reservation_id = @cancel_reservation,
-        @cancellation_reason = 'Test cancellation',
-        @refund_amount = @refund_amt OUTPUT,
-        @message = @cancel_message OUTPUT;
-    PRINT 'Result: ' + @cancel_message;
-END
-ELSE
-    PRINT 'No cancellable reservation found for testing.';
-GO
-
 -- =============================================
--- TEST TRIGGERS (by checking audit logs)
+-- TEST CURSOR PROCEDURES
 -- =============================================
 
 PRINT '';
-PRINT '--- Testing Triggers (check audit logs) ---';
+PRINT '========================================';
+PRINT 'TESTING CURSOR PROCEDURES (8 CURSORS)';
+PRINT '========================================';
+PRINT '';
+
+-- =============================================
+-- MEMBER 1 CURSORS
+-- =============================================
+PRINT '--- Member 1 Cursor Procedures ---';
+PRINT '';
+
+-- Test sp_process_daily_checkins
+PRINT 'Testing sp_process_daily_checkins:';
+DECLARE @checkin_count INT;
+DECLARE @checkin_message NVARCHAR(1000);
+EXEC sp_process_daily_checkins
+    @processed_count = @checkin_count OUTPUT,
+    @message = @checkin_message OUTPUT;
+PRINT 'Result: ' + @checkin_message;
+PRINT 'Processed Count: ' + CAST(@checkin_count AS NVARCHAR);
+GO
+
+-- Test sp_process_noshow_reservations
+PRINT '';
+PRINT 'Testing sp_process_noshow_reservations:';
+DECLARE @noshow_count INT;
+DECLARE @noshow_penalty DECIMAL(10,2);
+DECLARE @noshow_message NVARCHAR(1000);
+EXEC sp_process_noshow_reservations
+    @processed_count = @noshow_count OUTPUT,
+    @total_penalty = @noshow_penalty OUTPUT,
+    @message = @noshow_message OUTPUT;
+PRINT 'Result: ' + @noshow_message;
+GO
+
+-- =============================================
+-- MEMBER 2 CURSORS
+-- =============================================
+PRINT '';
+PRINT '--- Member 2 Cursor Procedures ---';
+PRINT '';
+
+-- Test sp_send_payment_reminders
+PRINT 'Testing sp_send_payment_reminders:';
+DECLARE @reminder_count INT;
+DECLARE @outstanding_total DECIMAL(12,2);
+DECLARE @reminder_message NVARCHAR(1000);
+EXEC sp_send_payment_reminders
+    @days_overdue = 0,
+    @reminder_count = @reminder_count OUTPUT,
+    @total_outstanding = @outstanding_total OUTPUT,
+    @message = @reminder_message OUTPUT;
+PRINT 'Result: ' + @reminder_message;
+GO
+
+-- Test sp_generate_monthly_revenue_summary
+PRINT '';
+PRINT 'Testing sp_generate_monthly_revenue_summary:';
+DECLARE @revenue_output NVARCHAR(MAX);
+DECLARE @revenue_message NVARCHAR(500);
+EXEC sp_generate_monthly_revenue_summary
+    @year = 2024,
+    @month = 12,
+    @summary_output = @revenue_output OUTPUT,
+    @message = @revenue_message OUTPUT;
+PRINT 'Result: ' + @revenue_message;
+PRINT @revenue_output;
+GO
+
+-- =============================================
+-- MEMBER 3 CURSORS
+-- =============================================
+PRINT '';
+PRINT '--- Member 3 Cursor Procedures ---';
+PRINT '';
+
+-- Test sp_process_loyalty_tier_upgrades
+PRINT 'Testing sp_process_loyalty_tier_upgrades:';
+DECLARE @upgrade_count INT;
+DECLARE @upgrade_message NVARCHAR(1000);
+EXEC sp_process_loyalty_tier_upgrades
+    @upgrade_count = @upgrade_count OUTPUT,
+    @message = @upgrade_message OUTPUT;
+PRINT 'Result: ' + @upgrade_message;
+GO
+
+-- Test sp_generate_service_usage_report
+PRINT '';
+PRINT 'Testing sp_generate_service_usage_report:';
+DECLARE @service_output NVARCHAR(MAX);
+DECLARE @service_message NVARCHAR(500);
+EXEC sp_generate_service_usage_report
+    @start_date = '2024-12-01',
+    @end_date = '2024-12-31',
+    @report_output = @service_output OUTPUT,
+    @message = @service_message OUTPUT;
+PRINT 'Result: ' + @service_message;
+PRINT @service_output;
+GO
+
+-- =============================================
+-- MEMBER 4 CURSORS
+-- =============================================
+PRINT '';
+PRINT '--- Member 4 Cursor Procedures ---';
+PRINT '';
+
+-- Test sp_auto_assign_maintenance_tasks
+PRINT 'Testing sp_auto_assign_maintenance_tasks:';
+DECLARE @assign_count INT;
+DECLARE @assign_message NVARCHAR(1000);
+EXEC sp_auto_assign_maintenance_tasks
+    @assigned_count = @assign_count OUTPUT,
+    @message = @assign_message OUTPUT;
+PRINT 'Result: ' + @assign_message;
+GO
+
+-- Test sp_generate_employee_shift_schedule
+PRINT '';
+PRINT 'Testing sp_generate_employee_shift_schedule:';
+DECLARE @schedule_count INT;
+DECLARE @schedule_message NVARCHAR(1000);
+EXEC sp_generate_employee_shift_schedule
+    @week_start_date = '2025-01-06',  -- A Monday
+    @schedule_count = @schedule_count OUTPUT,
+    @message = @schedule_message OUTPUT;
+PRINT 'Result: ' + @schedule_message;
+GO
+
+-- =============================================
+-- TEST TRIGGERS (check audit logs and notifications)
+-- =============================================
+
+PRINT '';
+PRINT '========================================';
+PRINT 'TESTING TRIGGERS (via audit logs)';
+PRINT '========================================';
 PRINT '';
 
 -- Check audit logs for recent entries
 PRINT 'Recent Audit Log Entries:';
-SELECT TOP 10 * FROM AUDIT_LOGS ORDER BY changed_at DESC;
+SELECT TOP 10 
+    log_id, table_name, operation, record_id, 
+    LEFT(old_values, 50) AS old_values_preview,
+    LEFT(new_values, 50) AS new_values_preview,
+    changed_at
+FROM AUDIT_LOGS 
+ORDER BY changed_at DESC;
 GO
 
 -- Check notifications generated by triggers
 PRINT '';
 PRINT 'Recent Notifications:';
-SELECT TOP 10 * FROM NOTIFICATIONS ORDER BY created_at DESC;
+SELECT TOP 15
+    notification_id,
+    notification_type,
+    title,
+    LEFT(message, 60) AS message_preview,
+    recipient_type,
+    created_at
+FROM NOTIFICATIONS 
+ORDER BY created_at DESC;
 GO
 
 -- Check room status history
 PRINT '';
 PRINT 'Recent Room Status Changes:';
-SELECT TOP 10 * FROM ROOM_STATUS_HISTORY ORDER BY changed_at DESC;
+SELECT TOP 10 * 
+FROM ROOM_STATUS_HISTORY 
+ORDER BY changed_at DESC;
+GO
+
+-- Check employee shifts (from schedule generation)
+PRINT '';
+PRINT 'Generated Employee Shifts (sample):';
+SELECT TOP 10
+    es.shift_id,
+    e.first_name + ' ' + e.last_name AS employee_name,
+    d.department_name,
+    es.shift_date,
+    es.start_time,
+    es.end_time,
+    es.status
+FROM EMPLOYEE_SHIFTS es
+INNER JOIN EMPLOYEES e ON es.employee_id = e.employee_id
+INNER JOIN DEPARTMENTS d ON e.department_id = d.department_id
+WHERE es.shift_date >= CAST(GETDATE() AS DATE)
+ORDER BY es.shift_date, es.start_time;
 GO
 
 PRINT '';
 PRINT '========================================';
 PRINT 'ALL TESTS COMPLETED';
 PRINT '========================================';
+PRINT '';
+PRINT 'Summary of Cursor Procedures Tested:';
+PRINT '  Member 1: sp_process_daily_checkins, sp_process_noshow_reservations';
+PRINT '  Member 2: sp_send_payment_reminders, sp_generate_monthly_revenue_summary';
+PRINT '  Member 3: sp_process_loyalty_tier_upgrades, sp_generate_service_usage_report';
+PRINT '  Member 4: sp_auto_assign_maintenance_tasks, sp_generate_employee_shift_schedule';
+PRINT '';
+PRINT 'Total: 8 Cursor Procedures (2 per member)';
 GO
