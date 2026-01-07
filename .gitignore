@@ -1,0 +1,65 @@
+# =============================================
+# SQL Server Database Project .gitignore
+# =============================================
+
+# IDE - JetBrains (IntelliJ, DataGrip, etc.)
+.idea/
+
+# IDE - Visual Studio
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# IDE - VS Code
+.vscode/
+
+# SQL Server Data Tools (SSDT)
+*.dbmdl
+*.dbproj.schemaview
+*.jfm
+*.pfx
+*.publishsettings
+
+# SQL Server backup files
+*.bak
+*.trn
+
+# SQL Server log files
+*.ldf
+*.mdf
+
+# Temporary files
+*.tmp
+*.temp
+*~
+
+# OS generated files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.DS_Store
+.DS_Store?
+._*
+
+# Logs
+*.log
+logs/
+
+# Build output
+bin/
+obj/
+out/
+
+# Database connection strings (security)
+*.config
+!*.config.example
+
+# Local environment
+.env
+.env.local
+
+# Backup folders
+backup/
+backups/
