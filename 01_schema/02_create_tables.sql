@@ -244,8 +244,7 @@ CREATE TABLE EMPLOYEE_SHIFTS (
     notes NVARCHAR(500),
     created_at DATETIME DEFAULT GETDATE(),
     CONSTRAINT FK_Shifts_Employee FOREIGN KEY (employee_id) 
-        REFERENCES EMPLOYEES(employee_id),
-    CONSTRAINT CHK_ShiftTime CHECK (end_time > start_time)
+        REFERENCES EMPLOYEES(employee_id)
 );
 GO
 
