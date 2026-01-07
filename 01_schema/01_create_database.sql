@@ -9,8 +9,9 @@ GO
 
 IF EXISTS (SELECT name FROM sys.databases WHERE name = N'HotelManagement')
 BEGIN
-    ALTER DATABASE HotelManagement SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
-    DROP DATABASE HotelManagement;
+    DECLARE @sql nvarchar(max) = N'ALTER DATABASE [HotelManagement] SET SINGLE_USER WITH ROLLBACK IMMEDIATE';
+    EXEC sp_executesql @sql;
+    DROP DATABASE [HotelManagement];
 END
 GO
 
