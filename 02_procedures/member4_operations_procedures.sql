@@ -1,15 +1,15 @@
 -- =============================================
--- Tung: OPERATIONS & HR MANAGEMENT
--- STORED PROCEDURES
+-- Tung: QUẢN LÝ VẬN HÀNH & NHÂN SỰ
+-- THỦ TỤC LƯU TRỮ (STORED PROCEDURES)
 -- =============================================
 
 USE HotelManagement;
 GO
 
 -- =============================================
--- PROCEDURE 1: sp_create_maintenance_request
--- Creates maintenance request with priority
--- assignment and automatic staff allocation
+-- THỦ TỤC 1: sp_create_maintenance_request
+-- Tạo yêu cầu bảo trì với mức độ ưu tiên
+-- và tự động phân công nhân viên
 -- =============================================
 CREATE OR ALTER PROCEDURE sp_create_maintenance_request
     @room_id INT,
@@ -34,7 +34,7 @@ BEGIN
     BEGIN TRY
         BEGIN TRANSACTION;
         
-        -- Validate room exists
+        -- Kiểm tra phòng có tồn tại không
         SELECT 
             @room_number = room_number,
             @room_status = status
@@ -50,7 +50,7 @@ BEGIN
             RETURN -1;
         END
         
-        -- Validate priority
+        -- Kiểm tra priority hợp lệ
         IF @priority NOT IN ('Low', 'Medium', 'High', 'Critical')
         BEGIN
             SET @message = 'Error: Invalid priority. Accepted values: Low, Medium, High, Critical.';
@@ -60,15 +60,15 @@ BEGIN
             RETURN -1;
         END
         
-        -- Get Maintenance department ID
+        -- Lấy ID bộ phận Bảo trì
         SELECT @maintenance_dept_id = department_id
         FROM DEPARTMENTS
         WHERE department_name = 'Maintenance';
         
-        -- Check available staff count
+        -- Đếm số nhân viên có sẵn
         SET @available_staff_count = dbo.fn_get_available_staff(@maintenance_dept_id, CAST(GETDATE() AS DATE));
         
-        -- Find available maintenance staff (least workload)
+        -- Tìm nhân viên có ít việc nhất để phân công
         SELECT TOP 1 @assigned_to = e.employee_id
         FROM EMPLOYEES e
         LEFT JOIN (
@@ -82,7 +82,7 @@ BEGIN
         AND e.is_available = 1
         ORDER BY ISNULL(mr.open_requests, 0) ASC, e.hire_date ASC;
         
-        -- If no staff available, still create request but without assignment
+        -- Nếu không có nhân viên rảnh, vẫn tạo request nhưng chưa phân công
         IF @assigned_to IS NULL
         BEGIN
             SET @assigned_employee = 'Unassigned (No available staff)';
@@ -94,7 +94,7 @@ BEGIN
             WHERE employee_id = @assigned_to;
         END
         
-        -- Create maintenance request
+        -- Tạo yêu cầu bảo trì
         INSERT INTO MAINTENANCE_REQUESTS (
             room_id, assigned_to, title, description,
             priority, status, estimated_cost, created_by
@@ -106,30 +106,12 @@ BEGIN
         
         SET @request_id = SCOPE_IDENTITY();
         
-        -- If Critical or High priority, update room status to Maintenance
+        -- Nếu priority là Critical hoặc High, cập nhật trạng thái phòng
         IF @priority IN ('Critical', 'High') AND @room_status = 'Available'
         BEGIN
             UPDATE ROOMS
             SET status = 'Maintenance', updated_at = GETDATE()
             WHERE room_id = @room_id;
-        END
-        
-        -- Create notification for assigned staff
-        IF @assigned_to IS NOT NULL
-        BEGIN
-            INSERT INTO NOTIFICATIONS (
-                notification_type, title, message,
-                related_table, related_id, recipient_type, recipient_id
-            )
-            VALUES (
-                'MaintenanceAssignment',
-                'New Maintenance Request Assigned',
-                'You have been assigned to: ' + @title + ' (Room ' + @room_number + '). Priority: ' + @priority,
-                'MAINTENANCE_REQUESTS',
-                @request_id,
-                'Employee',
-                @assigned_to
-            );
         END
         
         COMMIT TRANSACTION;
@@ -153,9 +135,9 @@ END;
 GO
 
 -- =============================================
--- PROCEDURE 2: sp_complete_maintenance
--- Completes maintenance request, updates room
--- status, and calculates response metrics
+-- THỦ TỤC 2: sp_complete_maintenance
+-- Hoàn thành yêu cầu bảo trì, cập nhật trạng thái phòng
+-- và tính toán các chỉ số phản hồi
 -- =============================================
 CREATE OR ALTER PROCEDURE sp_complete_maintenance
     @request_id INT,
@@ -174,24 +156,22 @@ BEGIN
     DECLARE @priority NVARCHAR(20);
     DECLARE @created_at DATETIME;
     DECLARE @started_at DATETIME;
-    DECLARE @assigned_to INT;
     DECLARE @has_active_reservation BIT = 0;
     
     BEGIN TRY
         BEGIN TRANSACTION;
         
-        -- Get maintenance request details
+        -- Lấy thông tin yêu cầu bảo trì
         SELECT 
             @current_status = status,
             @room_id = room_id,
             @priority = priority,
             @created_at = created_at,
-            @started_at = started_at,
-            @assigned_to = assigned_to
+            @started_at = started_at
         FROM MAINTENANCE_REQUESTS
         WHERE request_id = @request_id;
         
-        -- Validate request exists
+        -- Kiểm tra yêu cầu có tồn tại không
         IF @current_status IS NULL
         BEGIN
             SET @message = 'Error: Maintenance request not found.';
@@ -200,7 +180,7 @@ BEGIN
             RETURN -1;
         END
         
-        -- Check if already completed or cancelled
+        -- Kiểm tra đã hoàn thành hoặc hủy chưa
         IF @current_status IN ('Completed', 'Cancelled')
         BEGIN
             SET @message = 'Error: Request is already ' + @current_status + '.';
@@ -209,13 +189,13 @@ BEGIN
             RETURN -1;
         END
         
-        -- Get room number
+        -- Lấy số phòng
         SELECT @room_number = room_number FROM ROOMS WHERE room_id = @room_id;
         
-        -- Calculate response time (from creation to now)
+        -- Tính thời gian phản hồi (từ lúc tạo đến bây giờ)
         SET @response_time_hours = CAST(DATEDIFF(MINUTE, @created_at, GETDATE()) AS DECIMAL(10,2)) / 60;
         
-        -- Update request to completed
+        -- Cập nhật yêu cầu thành Completed
         UPDATE MAINTENANCE_REQUESTS
         SET 
             status = 'Completed',
@@ -229,7 +209,7 @@ BEGIN
             END
         WHERE request_id = @request_id;
         
-        -- Check if room has active reservation
+        -- Kiểm tra phòng có đặt chỗ đang hoạt động không
         IF EXISTS (
             SELECT 1 FROM RESERVATIONS
             WHERE room_id = @room_id
@@ -240,7 +220,7 @@ BEGIN
             SET @has_active_reservation = 1;
         END
         
-        -- Update room status based on whether there's an active reservation
+        -- Cập nhật trạng thái phòng dựa trên có đặt chỗ hay không
         UPDATE ROOMS
         SET 
             status = CASE 
@@ -250,43 +230,6 @@ BEGIN
             updated_at = GETDATE()
         WHERE room_id = @room_id
         AND status = 'Maintenance';
-        
-        -- Create completion notification
-        INSERT INTO NOTIFICATIONS (
-            notification_type, title, message,
-            related_table, related_id, recipient_type
-        )
-        VALUES (
-            'MaintenanceComplete',
-            'Maintenance Completed',
-            'Maintenance request #' + CAST(@request_id AS NVARCHAR) + ' for Room ' + @room_number + 
-            ' has been completed. Response time: ' + CAST(ROUND(@response_time_hours, 1) AS NVARCHAR) + ' hours.' +
-            CASE 
-                WHEN @actual_cost IS NOT NULL THEN ' Cost: $' + CAST(@actual_cost AS NVARCHAR)
-                ELSE ''
-            END,
-            'MAINTENANCE_REQUESTS',
-            @request_id,
-            'Front Desk'
-        );
-        
-        -- Update employee performance (mark as available for new tasks if needed)
-        IF @assigned_to IS NOT NULL
-        BEGIN
-            INSERT INTO NOTIFICATIONS (
-                notification_type, title, message,
-                related_table, related_id, recipient_type, recipient_id
-            )
-            VALUES (
-                'TaskComplete',
-                'Task Completed Successfully',
-                'Maintenance request #' + CAST(@request_id AS NVARCHAR) + ' has been marked as complete. Good job!',
-                'MAINTENANCE_REQUESTS',
-                @request_id,
-                'Employee',
-                @assigned_to
-            );
-        END
         
         COMMIT TRANSACTION;
         

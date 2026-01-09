@@ -1,6 +1,6 @@
 -- =============================================
--- Tung: OPERATIONS & HR MANAGEMENT
--- VIEWS
+-- Tung: QUẢN LÝ VẬN HÀNH & NHÂN SỰ
+-- CÁC VIEW
 -- =============================================
 
 USE HotelManagement;
@@ -8,7 +8,7 @@ GO
 
 -- =============================================
 -- VIEW 1: vw_maintenance_dashboard
--- Active requests, response times, staff workload
+-- Dashboard yêu cầu bảo trì, thời gian phản hồi, khối lượng công việc
 -- =============================================
 CREATE OR ALTER VIEW vw_maintenance_dashboard
 AS
@@ -24,16 +24,16 @@ SELECT
     mr.estimated_cost,
     mr.actual_cost,
     
-    -- Staff assignment
+    -- Thông tin nhân viên phụ trách
     ISNULL(e.first_name + ' ' + e.last_name, 'Unassigned') AS assigned_to,
     e.phone AS staff_phone,
     
-    -- Timestamps
+    -- Thời gian
     mr.created_at,
     mr.started_at,
     mr.completed_at,
     
-    -- Time metrics
+    -- Chỉ số thời gian
     CASE 
         WHEN mr.status = 'Completed' AND mr.completed_at IS NOT NULL
         THEN CAST(DATEDIFF(MINUTE, mr.created_at, mr.completed_at) / 60.0 AS DECIMAL(10,2))
@@ -48,7 +48,7 @@ SELECT
         ELSE NULL
     END AS work_duration_hours,
     
-    -- SLA Status (based on priority)
+    -- Trạng thái SLA (dựa trên mức độ ưu tiên)
     CASE 
         WHEN mr.status = 'Completed' THEN 'Completed'
         WHEN mr.priority = 'Critical' AND DATEDIFF(HOUR, mr.created_at, GETDATE()) > 4 THEN 'SLA Breached'
@@ -60,7 +60,7 @@ SELECT
         ELSE 'On Track'
     END AS sla_status,
     
-    -- Room impact
+    -- Ảnh hưởng đến phòng
     rm.status AS current_room_status,
     CASE 
         WHEN EXISTS (
@@ -81,8 +81,7 @@ GO
 
 -- =============================================
 -- VIEW 2: vw_employee_performance
--- Employee metrics: shifts worked, tasks completed,
--- workload distribution
+-- Chỉ số nhân viên: ca làm, task hoàn thành, phân bổ công việc
 -- =============================================
 CREATE OR ALTER VIEW vw_employee_performance
 AS
@@ -96,7 +95,7 @@ SELECT
     DATEDIFF(MONTH, e.hire_date, GETDATE()) AS months_employed,
     e.is_available,
     
-    -- Shift statistics (last 30 days)
+    -- Thống kê ca làm (30 ngày gần nhất)
     (SELECT COUNT(*) FROM EMPLOYEE_SHIFTS es 
      WHERE es.employee_id = e.employee_id 
      AND es.shift_date >= DATEADD(DAY, -30, GETDATE())
@@ -112,7 +111,7 @@ SELECT
      AND es.shift_date >= DATEADD(DAY, -30, GETDATE())
      AND es.status = 'Absent') AS shifts_absent,
     
-    -- Attendance rate
+    -- Tỷ lệ đi làm
     CASE 
         WHEN (SELECT COUNT(*) FROM EMPLOYEE_SHIFTS es 
               WHERE es.employee_id = e.employee_id 
@@ -131,7 +130,7 @@ SELECT
         ELSE 100.00
     END AS attendance_rate,
     
-    -- Maintenance tasks (for maintenance staff)
+    -- Task bảo trì (cho nhân viên bảo trì)
     (SELECT COUNT(*) FROM MAINTENANCE_REQUESTS mr 
      WHERE mr.assigned_to = e.employee_id) AS total_tasks_assigned,
     
@@ -143,14 +142,14 @@ SELECT
      WHERE mr.assigned_to = e.employee_id 
      AND mr.status IN ('Open', 'InProgress')) AS current_open_tasks,
     
-    -- Average completion time
+    -- Thời gian hoàn thành trung bình
     (SELECT AVG(CAST(DATEDIFF(MINUTE, mr.created_at, mr.completed_at) AS DECIMAL(10,2)) / 60)
      FROM MAINTENANCE_REQUESTS mr 
      WHERE mr.assigned_to = e.employee_id 
      AND mr.status = 'Completed'
      AND mr.completed_at IS NOT NULL) AS avg_completion_hours,
     
-    -- Performance rating (calculated metric)
+    -- Xếp hạng hiệu suất (chỉ số tính toán)
     CASE 
         WHEN d.department_name = 'Maintenance' THEN
             CASE 
@@ -168,7 +167,7 @@ SELECT
         ELSE 'N/A'
     END AS performance_rating,
     
-    -- Today's shift
+    -- Ca làm hôm nay
     (SELECT TOP 1 CONCAT(es.start_time, ' - ', es.end_time)
      FROM EMPLOYEE_SHIFTS es 
      WHERE es.employee_id = e.employee_id 

@@ -36,6 +36,8 @@ btl/
 │   └── member4_operations_functions.sql
 ├── 06_tests/
 │   └── test_all_objects.sql            # Test script for all objects
+├── 07_cursors/                         # Standalone cursors
+│   └── member4_operations_cursor.sql   # Tung - Operations cursors
 ├── BUSINESS_PROCESSES.md               # Business process documentation
 ├── MEMBER_BUSINESS_PROCESS_VERIFICATION.md  # Process verification
 ├── DATABASE_SCHEMA.dbml                # dbdiagram.io schema code
