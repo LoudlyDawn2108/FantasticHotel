@@ -10,18 +10,27 @@ GO
 -- PROCEDURE 1: sp_process_payment
 -- Processes payment with validation, receipt generation,
 -- and loyalty points update
+-- Authorization: Cashier+ (level 50)
 -- =============================================
 CREATE OR ALTER PROCEDURE sp_process_payment
+    @user_id INT,                           -- Required: calling user for authorization
     @reservation_id INT,
     @amount DECIMAL(10,2),
     @payment_method NVARCHAR(50),
     @transaction_ref NVARCHAR(100) = NULL,
-    @processed_by INT = NULL,
     @payment_id INT OUTPUT,
     @message NVARCHAR(500) OUTPUT
 AS
 BEGIN
     SET NOCOUNT ON;
+    
+    -- Authorization check - Cashier or higher required
+    IF dbo.fn_get_user_role_level(@user_id) < 50
+    BEGIN
+        SET @message = 'Access denied. Cashier or higher required.';
+        SET @payment_id = NULL;
+        RETURN -403;
+    END
     
     DECLARE @customer_id INT;
     DECLARE @total_amount DECIMAL(10,2);
@@ -160,14 +169,24 @@ GO
 -- PROCEDURE 2: sp_generate_invoice
 -- Creates detailed invoice with all services,
 -- taxes, and discounts using cursor
+-- Authorization: Cashier+ (level 50)
 -- =============================================
 CREATE OR ALTER PROCEDURE sp_generate_invoice
+    @user_id INT,                           -- Required: calling user for authorization
     @reservation_id INT,
     @invoice_output NVARCHAR(MAX) OUTPUT,
     @message NVARCHAR(500) OUTPUT
 AS
 BEGIN
     SET NOCOUNT ON;
+    
+    -- Authorization check - Cashier or higher required
+    IF dbo.fn_get_user_role_level(@user_id) < 50
+    BEGIN
+        SET @message = 'Access denied. Cashier or higher required.';
+        SET @invoice_output = NULL;
+        RETURN -403;
+    END
     
     DECLARE @customer_id INT;
     DECLARE @customer_name NVARCHAR(100);

@@ -16,13 +16,23 @@ GO
 -- Processes all reservations scheduled for check-in today
 -- Updates room status to 'Reserved' and sends notifications
 -- Uses CURSOR to iterate through today's check-ins
+-- Authorization: Receptionist+ (level 50)
 -- =============================================
 CREATE OR ALTER PROCEDURE sp_process_daily_checkins
+    @user_id INT,                           -- Required: calling user for authorization
     @processed_count INT OUTPUT,
     @message NVARCHAR(1000) OUTPUT
 AS
 BEGIN
     SET NOCOUNT ON;
+    
+    -- Authorization check
+    IF dbo.fn_get_user_role_level(@user_id) < 50
+    BEGIN
+        SET @message = 'Access denied. Receptionist or higher required.';
+        SET @processed_count = 0;
+        RETURN -403;
+    END
     
     DECLARE @reservation_id INT;
     DECLARE @customer_id INT;
@@ -125,14 +135,25 @@ GO
 -- Processes reservations that are no-shows (didn't check in by end of day)
 -- Updates status to 'NoShow', releases rooms, applies penalties
 -- Uses CURSOR to iterate through no-show reservations
+-- Authorization: Receptionist+ (level 50)
 -- =============================================
 CREATE OR ALTER PROCEDURE sp_process_noshow_reservations
+    @user_id INT,                           -- Required: calling user for authorization
     @processed_count INT OUTPUT,
     @total_penalty DECIMAL(10,2) OUTPUT,
     @message NVARCHAR(1000) OUTPUT
 AS
 BEGIN
     SET NOCOUNT ON;
+    
+    -- Authorization check
+    IF dbo.fn_get_user_role_level(@user_id) < 50
+    BEGIN
+        SET @message = 'Access denied. Receptionist or higher required.';
+        SET @processed_count = 0;
+        SET @total_penalty = 0;
+        RETURN -403;
+    END
     
     DECLARE @reservation_id INT;
     DECLARE @customer_id INT;

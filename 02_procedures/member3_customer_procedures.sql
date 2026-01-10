@@ -10,8 +10,10 @@ GO
 -- PROCEDURE 1: sp_register_customer
 -- Registers new customer with validation,
 -- duplicate check, and welcome benefits
+-- Authorization: Receptionist+ (level 50)
 -- =============================================
 CREATE OR ALTER PROCEDURE sp_register_customer
+    @user_id INT,                           -- Required: calling user for authorization
     @first_name NVARCHAR(50),
     @last_name NVARCHAR(50),
     @email NVARCHAR(100),
@@ -26,6 +28,14 @@ CREATE OR ALTER PROCEDURE sp_register_customer
 AS
 BEGIN
     SET NOCOUNT ON;
+    
+    -- Authorization check - Receptionist or higher required
+    IF dbo.fn_get_user_role_level(@user_id) < 50
+    BEGIN
+        SET @message = 'Access denied. Receptionist or higher required.';
+        SET @customer_id = NULL;
+        RETURN -403;
+    END
     
     DECLARE @welcome_points INT = 100;  -- Welcome bonus points
     DECLARE @existing_customer_id INT;
@@ -151,18 +161,27 @@ GO
 -- PROCEDURE 2: sp_add_service_to_reservation
 -- Adds service to active reservation with
 -- availability and balance check
+-- Authorization: F&B Staff+ (level 30)
 -- =============================================
 CREATE OR ALTER PROCEDURE sp_add_service_to_reservation
+    @user_id INT,                           -- Required: calling user for authorization
     @reservation_id INT,
     @service_id INT,
     @quantity INT = 1,
     @notes NVARCHAR(500) = NULL,
-    @served_by INT = NULL,
     @usage_id INT OUTPUT,
     @message NVARCHAR(500) OUTPUT
 AS
 BEGIN
     SET NOCOUNT ON;
+    
+    -- Authorization check - F&B Staff or higher required
+    IF dbo.fn_get_user_role_level(@user_id) < 30
+    BEGIN
+        SET @message = 'Access denied. F&B Staff or higher required.';
+        SET @usage_id = NULL;
+        RETURN -403;
+    END
     
     DECLARE @reservation_status NVARCHAR(20);
     DECLARE @customer_id INT;

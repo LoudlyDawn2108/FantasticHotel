@@ -15,8 +15,10 @@ GO
 -- CURSOR 1: sp_send_payment_reminders
 -- Sends payment reminders for reservations with outstanding balances
 -- Uses CURSOR to iterate through unpaid reservations
+-- Authorization: Finance Manager+ (level 70)
 -- =============================================
 CREATE OR ALTER PROCEDURE sp_send_payment_reminders
+    @user_id INT,                           -- Required: calling user for authorization
     @days_overdue INT = 0,  -- 0 = due today, negative = past due
     @reminder_count INT OUTPUT,
     @total_outstanding DECIMAL(12,2) OUTPUT,
@@ -24,6 +26,15 @@ CREATE OR ALTER PROCEDURE sp_send_payment_reminders
 AS
 BEGIN
     SET NOCOUNT ON;
+    
+    -- Authorization check - Finance Manager or higher required
+    IF dbo.fn_get_user_role_level(@user_id) < 70
+    BEGIN
+        SET @message = 'Access denied. Finance Manager or higher required.';
+        SET @reminder_count = 0;
+        SET @total_outstanding = 0;
+        RETURN -403;
+    END
     
     DECLARE @reservation_id INT;
     DECLARE @customer_id INT;
@@ -160,8 +171,10 @@ GO
 -- CURSOR 2: sp_generate_monthly_revenue_summary
 -- Generates monthly revenue summary report using cursor
 -- Calculates revenue by room type, service category, payment method
+-- Authorization: Finance Manager+ (level 70)
 -- =============================================
 CREATE OR ALTER PROCEDURE sp_generate_monthly_revenue_summary
+    @user_id INT,                           -- Required: calling user for authorization
     @year INT,
     @month INT,
     @summary_output NVARCHAR(MAX) OUTPUT,
@@ -169,6 +182,14 @@ CREATE OR ALTER PROCEDURE sp_generate_monthly_revenue_summary
 AS
 BEGIN
     SET NOCOUNT ON;
+    
+    -- Authorization check - Finance Manager or higher required
+    IF dbo.fn_get_user_role_level(@user_id) < 70
+    BEGIN
+        SET @message = 'Access denied. Finance Manager or higher required.';
+        SET @summary_output = NULL;
+        RETURN -403;
+    END
     
     DECLARE @start_date DATE;
     DECLARE @end_date DATE;

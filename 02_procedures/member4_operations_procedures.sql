@@ -10,20 +10,30 @@ GO
 -- THỦ TỤC 1: sp_create_maintenance_request
 -- Tạo yêu cầu bảo trì với mức độ ưu tiên
 -- và tự động phân công nhân viên
+-- Authorization: Housekeeping/Maintenance Staff+ (level 30)
 -- =============================================
 CREATE OR ALTER PROCEDURE sp_create_maintenance_request
+    @user_id INT,                           -- Required: calling user for authorization
     @room_id INT,
     @title NVARCHAR(200),
     @description NVARCHAR(1000) = NULL,
     @priority NVARCHAR(20) = 'Medium',
     @estimated_cost DECIMAL(10,2) = NULL,
-    @created_by INT = NULL,
     @request_id INT OUTPUT,
     @assigned_employee NVARCHAR(100) OUTPUT,
     @message NVARCHAR(500) OUTPUT
 AS
 BEGIN
     SET NOCOUNT ON;
+    
+    -- Authorization check - Housekeeping/Maintenance Staff or higher required
+    IF dbo.fn_get_user_role_level(@user_id) < 30
+    BEGIN
+        SET @message = 'Access denied. Housekeeping or Maintenance Staff or higher required.';
+        SET @request_id = NULL;
+        SET @assigned_employee = NULL;
+        RETURN -403;
+    END
     
     DECLARE @room_number NVARCHAR(10);
     DECLARE @room_status NVARCHAR(20);
@@ -138,17 +148,26 @@ GO
 -- THỦ TỤC 2: sp_complete_maintenance
 -- Hoàn thành yêu cầu bảo trì, cập nhật trạng thái phòng
 -- và tính toán các chỉ số phản hồi
+-- Authorization: Maintenance Staff+ (level 30)
 -- =============================================
 CREATE OR ALTER PROCEDURE sp_complete_maintenance
+    @user_id INT,                           -- Required: calling user for authorization
     @request_id INT,
     @actual_cost DECIMAL(10,2) = NULL,
     @completion_notes NVARCHAR(500) = NULL,
-    @completed_by INT = NULL,
     @response_time_hours DECIMAL(10,2) OUTPUT,
     @message NVARCHAR(500) OUTPUT
 AS
 BEGIN
     SET NOCOUNT ON;
+    
+    -- Authorization check - Maintenance Staff or higher required
+    IF dbo.fn_get_user_role_level(@user_id) < 30
+    BEGIN
+        SET @message = 'Access denied. Maintenance Staff or higher required.';
+        SET @response_time_hours = NULL;
+        RETURN -403;
+    END
     
     DECLARE @current_status NVARCHAR(20);
     DECLARE @room_id INT;

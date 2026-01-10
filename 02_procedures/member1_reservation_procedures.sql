@@ -10,22 +10,27 @@ GO
 -- PROCEDURE 1: sp_create_reservation
 -- Creates a new reservation with full validation,
 -- availability check, price calculation, and room status update
+-- Authorization: Guest (own), Receptionist+
 -- =============================================
 CREATE OR ALTER PROCEDURE sp_create_reservation
+    @user_id INT,                           -- Required: calling user for authorization
     @customer_id INT,
     @room_id INT,
     @check_in_date DATE,
     @check_out_date DATE,
     @num_guests INT = 1,
     @special_requests NVARCHAR(1000) = NULL,
-    @created_by INT = NULL,
     @reservation_id INT OUTPUT,
     @message NVARCHAR(500) OUTPUT
 AS
 BEGIN
     SET NOCOUNT ON;
     
-    -- Declare variables
+    -- Authorization variables
+    DECLARE @user_role_level INT;
+    DECLARE @user_customer_id INT;
+    
+    -- Business logic variables
     DECLARE @room_charge DECIMAL(10,2);
     DECLARE @tax_amount DECIMAL(10,2);
     DECLARE @discount_rate DECIMAL(5,2);
@@ -37,7 +42,25 @@ BEGIN
     DECLARE @customer_tier NVARCHAR(20);
     DECLARE @is_available BIT;
     
-    -- Start transaction
+    -- ========================================
+    -- AUTHORIZATION CHECK
+    -- ========================================
+    SET @user_role_level = dbo.fn_get_user_role_level(@user_id);
+    
+    -- Get the customer_id linked to this user (for guest access)
+    SELECT @user_customer_id = customer_id FROM USER_ACCOUNTS WHERE user_id = @user_id;
+    
+    -- Guests (level < 50) can only book for themselves
+    IF @user_role_level < 50 AND (@user_customer_id IS NULL OR @user_customer_id <> @customer_id)
+    BEGIN
+        SET @message = 'Access denied. Guests can only create reservations for themselves.';
+        SET @reservation_id = NULL;
+        RETURN -403;
+    END
+    
+    -- ========================================
+    -- START TRANSACTION
+    -- ========================================
     BEGIN TRY
         BEGIN TRANSACTION;
         
@@ -165,17 +188,23 @@ GO
 -- PROCEDURE 2: sp_cancel_reservation
 -- Cancels a booking with refund calculation,
 -- room status update, and loyalty point adjustment
+-- Authorization: Guest (own), Receptionist+
 -- =============================================
 CREATE OR ALTER PROCEDURE sp_cancel_reservation
+    @user_id INT,                           -- Required: calling user for authorization
     @reservation_id INT,
     @cancellation_reason NVARCHAR(500),
-    @cancelled_by INT = NULL,
     @refund_amount DECIMAL(10,2) OUTPUT,
     @message NVARCHAR(500) OUTPUT
 AS
 BEGIN
     SET NOCOUNT ON;
     
+    -- Authorization variables
+    DECLARE @user_role_level INT;
+    DECLARE @user_customer_id INT;
+    
+    -- Business logic variables
     DECLARE @current_status NVARCHAR(20);
     DECLARE @check_in_date DATE;
     DECLARE @paid_amount DECIMAL(10,2);
@@ -185,6 +214,23 @@ BEGIN
     DECLARE @days_until_checkin INT;
     DECLARE @refund_percentage DECIMAL(5,2);
     DECLARE @loyalty_points_to_deduct INT;
+    
+    -- ========================================
+    -- AUTHORIZATION CHECK (after getting reservation details)
+    -- ========================================
+    SET @user_role_level = dbo.fn_get_user_role_level(@user_id);
+    SELECT @user_customer_id = customer_id FROM USER_ACCOUNTS WHERE user_id = @user_id;
+    
+    -- Get reservation customer_id first for authorization
+    SELECT @customer_id = customer_id FROM RESERVATIONS WHERE reservation_id = @reservation_id;
+    
+    -- Guests (level < 50) can only cancel their own reservations
+    IF @user_role_level < 50 AND (@user_customer_id IS NULL OR @user_customer_id <> @customer_id)
+    BEGIN
+        SET @message = 'Access denied. Guests can only cancel their own reservations.';
+        SET @refund_amount = 0;
+        RETURN -403;
+    END
     
     BEGIN TRY
         BEGIN TRANSACTION;

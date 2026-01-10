@@ -15,13 +15,23 @@ GO
 -- CURSOR 1: sp_process_loyalty_tier_upgrades
 -- Batch processes all customers eligible for tier upgrades
 -- Uses CURSOR to iterate through customers and upgrade tiers
+-- Authorization: Manager+ (level 70)
 -- =============================================
 CREATE OR ALTER PROCEDURE sp_process_loyalty_tier_upgrades
+    @user_id INT,                           -- Required: calling user for authorization
     @upgrade_count INT OUTPUT,
     @message NVARCHAR(1000) OUTPUT
 AS
 BEGIN
     SET NOCOUNT ON;
+    
+    -- Authorization check - Manager or higher required
+    IF dbo.fn_get_user_role_level(@user_id) < 70
+    BEGIN
+        SET @message = 'Access denied. Manager or higher required.';
+        SET @upgrade_count = 0;
+        RETURN -403;
+    END
     
     DECLARE @customer_id INT;
     DECLARE @customer_name NVARCHAR(100);
@@ -164,8 +174,10 @@ GO
 -- CURSOR 2: sp_generate_service_usage_report
 -- Generates detailed service usage report for a date range
 -- Uses CURSOR to compile usage by customer, service, and category
+-- Authorization: Manager+ (level 70)
 -- =============================================
 CREATE OR ALTER PROCEDURE sp_generate_service_usage_report
+    @user_id INT,                           -- Required: calling user for authorization
     @start_date DATE,
     @end_date DATE,
     @report_output NVARCHAR(MAX) OUTPUT,
@@ -173,6 +185,14 @@ CREATE OR ALTER PROCEDURE sp_generate_service_usage_report
 AS
 BEGIN
     SET NOCOUNT ON;
+    
+    -- Authorization check - Manager or higher required
+    IF dbo.fn_get_user_role_level(@user_id) < 70
+    BEGIN
+        SET @message = 'Access denied. Manager or higher required.';
+        SET @report_output = NULL;
+        RETURN -403;
+    END
     
     DECLARE @service_id INT;
     DECLARE @service_name NVARCHAR(100);
