@@ -107,6 +107,20 @@ BEGIN
     FROM inserted i
     INNER JOIN ROOMS r ON i.room_id = r.room_id
     WHERE i.priority = 'Critical';
+    
+    -- Thông báo cho nhân viên được phân công (nếu có)
+    INSERT INTO NOTIFICATIONS (notification_type, title, message, related_table, related_id, recipient_type, recipient_id)
+    SELECT 
+        'TaskAssignment',
+        'New Task Assigned',
+        'You have been assigned: ' + i.title + ' (Room ' + r.room_number + '). Priority: ' + i.priority,
+        'MAINTENANCE_REQUESTS',
+        i.request_id,
+        'Employee',
+        i.assigned_to
+    FROM inserted i
+    INNER JOIN ROOMS r ON i.room_id = r.room_id
+    WHERE i.assigned_to IS NOT NULL;
 END;
 GO
 
