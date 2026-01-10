@@ -163,5 +163,5 @@ AND r.status NOT IN ('Cancelled', 'NoShow')  -- Exclude cancelled
 ORDER BY (r.total_amount - r.paid_amount) DESC;
 GO
 
-PRINT 'Khanh Views created successfully.';
+PRINT 'Financial Views created successfully.';
 GO

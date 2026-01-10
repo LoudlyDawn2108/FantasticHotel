@@ -44,7 +44,7 @@ BEGIN
         BEGIN TRANSACTION;
         
         -- CURSOR: Iterate through reservations with outstanding payments
-        DECLARE reminder_cursor CURSOR FOR
+        DECLARE reminder_cursor CURSOR LOCAL FOR
             SELECT 
                 r.reservation_id,
                 r.customer_id,
@@ -61,11 +61,7 @@ BEGIN
             INNER JOIN ROOMS rm ON r.room_id = rm.room_id
             WHERE r.total_amount > r.paid_amount  -- Has outstanding balance
             AND r.status NOT IN ('Cancelled', 'Pending')  -- Valid reservation
-            AND (
-                (@days_overdue >= 0 AND r.check_out_date <= DATEADD(DAY, -@days_overdue, GETDATE()))
-                OR
-                (@days_overdue < 0 AND r.check_out_date <= GETDATE())
-            )
+            AND r.check_out_date <= DATEADD(DAY, CASE WHEN @days_overdue < 0 THEN 0 ELSE -@days_overdue END, GETDATE())
             ORDER BY (r.total_amount - r.paid_amount) DESC;  -- Highest balance first
         
         OPEN reminder_cursor;
@@ -145,10 +141,9 @@ BEGIN
             ROLLBACK TRANSACTION;
         
         IF CURSOR_STATUS('local', 'reminder_cursor') >= 0
-        BEGIN
             CLOSE reminder_cursor;
+        IF CURSOR_STATUS('local', 'reminder_cursor') >= -1
             DEALLOCATE reminder_cursor;
-        END
         
         SET @message = 'Error: ' + ERROR_MESSAGE();
         RETURN -1;
@@ -193,7 +188,7 @@ BEGIN
     
     BEGIN TRY
         -- CURSOR 1: Revenue by Room Type
-        DECLARE room_revenue_cursor CURSOR FOR
+        DECLARE room_revenue_cursor CURSOR LOCAL FOR
             SELECT 
                 rt.type_name,
                 SUM(r.room_charge) AS revenue,
@@ -222,7 +217,7 @@ BEGIN
         DEALLOCATE room_revenue_cursor;
         
         -- CURSOR 2: Revenue by Service Category
-        DECLARE service_revenue_cursor CURSOR FOR
+        DECLARE service_revenue_cursor CURSOR LOCAL FOR
             SELECT 
                 sc.category_name,
                 SUM(su.total_price) AS revenue
@@ -250,7 +245,7 @@ BEGIN
         DEALLOCATE service_revenue_cursor;
         
         -- CURSOR 3: Payments by Method
-        DECLARE payment_cursor CURSOR FOR
+        DECLARE payment_cursor CURSOR LOCAL FOR
             SELECT 
                 payment_method,
                 SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END) AS total,
@@ -310,6 +305,22 @@ BEGIN
         
     END TRY
     BEGIN CATCH
+        -- Clean up cursors if they are left open
+        IF CURSOR_STATUS('local', 'room_revenue_cursor') >= 0
+            CLOSE room_revenue_cursor;
+        IF CURSOR_STATUS('local', 'room_revenue_cursor') >= -1
+            DEALLOCATE room_revenue_cursor;
+
+        IF CURSOR_STATUS('local', 'service_revenue_cursor') >= 0
+            CLOSE service_revenue_cursor;
+        IF CURSOR_STATUS('local', 'service_revenue_cursor') >= -1
+            DEALLOCATE service_revenue_cursor;
+
+        IF CURSOR_STATUS('local', 'payment_cursor') >= 0
+            CLOSE payment_cursor;
+        IF CURSOR_STATUS('local', 'payment_cursor') >= -1
+            DEALLOCATE payment_cursor;
+
         SET @summary_output = NULL;
         SET @message = 'Error: ' + ERROR_MESSAGE();
         RETURN -1;
@@ -317,5 +328,5 @@ BEGIN
 END;
 GO
 
-PRINT 'Khanh Cursor Procedures created successfully.';
+PRINT 'Cursor Procedures created successfully.';
 GO
