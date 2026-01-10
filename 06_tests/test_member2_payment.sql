@@ -17,11 +17,11 @@ PRINT '';
 PRINT '--- Testing Functions ---';
 
 PRINT 'Testing fn_calculate_loyalty_points:';
-SELECT dbo.fn_calculate_loyalty_points(500.00, 'Gold') AS points_earned;
+SELECT dbo.fn_calculate_loyalty_points(500.00, 'Gold') AS fn_calculate_loyalty_points_result;
 GO
 
 PRINT 'Testing fn_get_customer_tier:';
-SELECT dbo.fn_get_customer_tier(25000.00) AS tier_level;
+SELECT dbo.fn_get_customer_tier(25000.00) AS fn_get_customer_tier_result;
 GO
 
 PRINT 'Testing fn_calculate_total_bill (table function):';

@@ -17,15 +17,15 @@ PRINT '';
 PRINT '--- Testing Functions ---';
 
 PRINT 'Testing fn_check_room_availability:';
-SELECT dbo.fn_check_room_availability(1, '2025-01-15', '2025-01-18') AS availability_room_1;
+SELECT dbo.fn_check_room_availability(1, '2025-01-15', '2025-01-18') AS fn_check_room_availability_result;
 GO
 
 PRINT 'Testing fn_calculate_room_price:';
-SELECT dbo.fn_calculate_room_price(1, '2025-01-15', '2025-01-18', 1) AS calculated_price;
+SELECT dbo.fn_calculate_room_price(1, '2025-01-15', '2025-01-18', 1) AS fn_calculate_room_price_result;
 GO
 
 PRINT 'Testing fn_calculate_discount_rate:';
-SELECT dbo.fn_calculate_discount_rate('Gold', 2500) AS discount_rate;
+SELECT dbo.fn_calculate_discount_rate('Gold', 2500) AS fn_calculate_discount_rate_result;
 GO
 
 -- =============================================

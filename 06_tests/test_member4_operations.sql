@@ -13,15 +13,15 @@ PRINT '';
 
 -- =============================================
 -- TEST FUNCTIONS
--- =============================================
+-- =============================================R
 PRINT '--- Testing Functions ---';
 
 PRINT 'Testing fn_get_available_staff:';
-SELECT dbo.fn_get_available_staff(4, CAST(GETDATE() AS DATE)) AS available_maintenance_staff;
+SELECT dbo.fn_get_available_staff(4, CAST(GETDATE() AS DATE)) AS fn_get_available_staff_result;
 GO
 
 PRINT 'Testing fn_calculate_sla_status:';
-SELECT dbo.fn_calculate_sla_status('High', 'Open', DATEADD(HOUR, -10, GETDATE()), NULL) AS sla_status;
+SELECT dbo.fn_calculate_sla_status('High', 'Open', DATEADD(HOUR, -10, GETDATE()), NULL) AS fn_calculate_sla_status_result;
 GO
 
 -- =============================================

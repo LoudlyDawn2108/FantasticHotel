@@ -21,7 +21,7 @@ SELECT * FROM dbo.fn_get_customer_statistics(1);
 GO
 
 PRINT 'Testing fn_get_customer_discount_rate:';
-SELECT dbo.fn_get_customer_discount_rate(1) AS discount_rate;
+SELECT dbo.fn_get_customer_discount_rate(1) AS fn_get_customer_discount_rate_result;
 GO
 
 -- =============================================
