@@ -52,6 +52,7 @@ PRINT 'Testing sp_process_payment:';
 DECLARE @payment_id INT;
 DECLARE @payment_message NVARCHAR(500);
 EXEC sp_process_payment
+    @user_id = 1,
     @reservation_id = 1,
     @amount = 100.00,
     @payment_method = 'Credit Card',
@@ -64,6 +65,7 @@ PRINT 'Testing sp_generate_invoice:';
 DECLARE @invoice_output NVARCHAR(MAX);
 DECLARE @invoice_message NVARCHAR(500);
 EXEC sp_generate_invoice
+    @user_id = 1,
     @reservation_id = 1,
     @invoice_output = @invoice_output OUTPUT,
     @message = @invoice_message OUTPUT;
@@ -81,6 +83,7 @@ DECLARE @reminder_count INT;
 DECLARE @outstanding_total DECIMAL(12,2);
 DECLARE @reminder_message NVARCHAR(1000);
 EXEC sp_send_payment_reminders
+    @user_id = 1,
     @days_overdue = 0,
     @reminder_count = @reminder_count OUTPUT,
     @total_outstanding = @outstanding_total OUTPUT,
@@ -92,6 +95,7 @@ PRINT 'Testing sp_generate_monthly_revenue_summary:';
 DECLARE @revenue_output NVARCHAR(MAX);
 DECLARE @revenue_message NVARCHAR(500);
 EXEC sp_generate_monthly_revenue_summary
+    @user_id = 1,
     @year = 2024,
     @month = 12,
     @summary_output = @revenue_output OUTPUT,

@@ -119,6 +119,7 @@ PRINT 'Testing sp_register_customer:';
 DECLARE @new_customer_id INT;
 DECLARE @register_message NVARCHAR(500);
 EXEC sp_register_customer 
+    @user_id = 1,
     @first_name = 'Test',
     @last_name = 'Customer' + CAST(CAST(RAND()*1000 AS INT) AS NVARCHAR),
     @email = 'test' + CAST(CAST(RAND()*10000 AS INT) AS NVARCHAR) + '@email.com',
@@ -135,6 +136,7 @@ PRINT 'Testing sp_create_reservation:';
 DECLARE @new_reservation_id INT;
 DECLARE @reservation_message NVARCHAR(500);
 EXEC sp_create_reservation
+    @user_id = 1,
     @customer_id = 1,
     @room_id = 1,
     @check_in_date = '2025-02-01',
@@ -152,6 +154,7 @@ DECLARE @new_request_id INT;
 DECLARE @assigned_emp NVARCHAR(100);
 DECLARE @maint_message NVARCHAR(500);
 EXEC sp_create_maintenance_request
+    @user_id = 1,
     @room_id = 1,
     @title = 'Test Maintenance Request',
     @description = 'This is a test maintenance request',
@@ -183,6 +186,7 @@ PRINT 'Testing sp_process_daily_checkins:';
 DECLARE @checkin_count INT;
 DECLARE @checkin_message NVARCHAR(1000);
 EXEC sp_process_daily_checkins
+    @user_id = 1,
     @processed_count = @checkin_count OUTPUT,
     @message = @checkin_message OUTPUT;
 PRINT 'Result: ' + @checkin_message;
@@ -196,6 +200,7 @@ DECLARE @noshow_count INT;
 DECLARE @noshow_penalty DECIMAL(10,2);
 DECLARE @noshow_message NVARCHAR(1000);
 EXEC sp_process_noshow_reservations
+    @user_id = 1,
     @processed_count = @noshow_count OUTPUT,
     @total_penalty = @noshow_penalty OUTPUT,
     @message = @noshow_message OUTPUT;
@@ -215,6 +220,7 @@ DECLARE @reminder_count INT;
 DECLARE @outstanding_total DECIMAL(12,2);
 DECLARE @reminder_message NVARCHAR(1000);
 EXEC sp_send_payment_reminders
+    @user_id = 1,
     @days_overdue = 0,
     @reminder_count = @reminder_count OUTPUT,
     @total_outstanding = @outstanding_total OUTPUT,
@@ -228,6 +234,7 @@ PRINT 'Testing sp_generate_monthly_revenue_summary:';
 DECLARE @revenue_output NVARCHAR(MAX);
 DECLARE @revenue_message NVARCHAR(500);
 EXEC sp_generate_monthly_revenue_summary
+    @user_id = 1,
     @year = 2024,
     @month = 12,
     @summary_output = @revenue_output OUTPUT,
@@ -248,6 +255,7 @@ PRINT 'Testing sp_process_loyalty_tier_upgrades:';
 DECLARE @upgrade_count INT;
 DECLARE @upgrade_message NVARCHAR(1000);
 EXEC sp_process_loyalty_tier_upgrades
+    @user_id = 1,
     @upgrade_count = @upgrade_count OUTPUT,
     @message = @upgrade_message OUTPUT;
 PRINT 'Result: ' + @upgrade_message;
@@ -259,6 +267,7 @@ PRINT 'Testing sp_generate_service_usage_report:';
 DECLARE @service_output NVARCHAR(MAX);
 DECLARE @service_message NVARCHAR(500);
 EXEC sp_generate_service_usage_report
+    @user_id = 1,
     @start_date = '2024-12-01',
     @end_date = '2024-12-31',
     @report_output = @service_output OUTPUT,
@@ -279,6 +288,7 @@ PRINT 'Testing sp_auto_assign_maintenance_tasks:';
 DECLARE @assign_count INT;
 DECLARE @assign_message NVARCHAR(1000);
 EXEC sp_auto_assign_maintenance_tasks
+    @user_id = 1,
     @assigned_count = @assign_count OUTPUT,
     @message = @assign_message OUTPUT;
 PRINT 'Result: ' + @assign_message;
@@ -290,6 +300,7 @@ PRINT 'Testing sp_generate_employee_shift_schedule:';
 DECLARE @schedule_count INT;
 DECLARE @schedule_message NVARCHAR(1000);
 EXEC sp_generate_employee_shift_schedule
+    @user_id = 1,
     @week_start_date = '2025-01-06',  -- A Monday
     @schedule_count = @schedule_count OUTPUT,
     @message = @schedule_message OUTPUT;

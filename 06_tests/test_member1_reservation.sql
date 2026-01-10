@@ -52,6 +52,7 @@ PRINT 'Testing sp_create_reservation:';
 DECLARE @new_reservation_id INT;
 DECLARE @reservation_message NVARCHAR(500);
 EXEC sp_create_reservation
+    @user_id = 1,
     @customer_id = 1,
     @room_id = 1,
     @check_in_date = '2025-02-01',
@@ -66,6 +67,7 @@ PRINT 'Testing sp_cancel_reservation:';
 -- Note: Use a valid reservation_id from your test data
 DECLARE @cancel_message NVARCHAR(500);
 EXEC sp_cancel_reservation
+    @user_id = 1,
     @reservation_id = 1,
     @cancellation_reason = 'Test cancellation',
     @message = @cancel_message OUTPUT;
@@ -82,6 +84,7 @@ PRINT 'Testing sp_process_daily_checkins:';
 DECLARE @checkin_count INT;
 DECLARE @checkin_message NVARCHAR(1000);
 EXEC sp_process_daily_checkins
+    @user_id = 1,
     @processed_count = @checkin_count OUTPUT,
     @message = @checkin_message OUTPUT;
 PRINT 'Result: ' + @checkin_message;
@@ -92,6 +95,7 @@ DECLARE @noshow_count INT;
 DECLARE @noshow_penalty DECIMAL(10,2);
 DECLARE @noshow_message NVARCHAR(1000);
 EXEC sp_process_noshow_reservations
+    @user_id = 1,
     @processed_count = @noshow_count OUTPUT,
     @total_penalty = @noshow_penalty OUTPUT,
     @message = @noshow_message OUTPUT;

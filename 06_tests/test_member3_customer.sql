@@ -48,6 +48,7 @@ PRINT 'Testing sp_register_customer:';
 DECLARE @new_customer_id INT;
 DECLARE @register_message NVARCHAR(500);
 EXEC sp_register_customer 
+    @user_id = 1,
     @first_name = 'Test',
     @last_name = 'Customer' + CAST(CAST(RAND()*1000 AS INT) AS NVARCHAR),
     @email = 'test' + CAST(CAST(RAND()*10000 AS INT) AS NVARCHAR) + '@email.com',
@@ -62,6 +63,7 @@ PRINT 'Testing sp_add_service_to_reservation:';
 DECLARE @usage_id INT;
 DECLARE @service_message NVARCHAR(500);
 EXEC sp_add_service_to_reservation
+    @user_id = 1,
     @reservation_id = 1,
     @service_id = 1,
     @quantity = 1,
@@ -80,6 +82,7 @@ PRINT 'Testing sp_process_loyalty_tier_upgrades:';
 DECLARE @upgrade_count INT;
 DECLARE @upgrade_message NVARCHAR(1000);
 EXEC sp_process_loyalty_tier_upgrades
+    @user_id = 1,
     @upgrade_count = @upgrade_count OUTPUT,
     @message = @upgrade_message OUTPUT;
 PRINT 'Result: ' + @upgrade_message;
@@ -89,6 +92,7 @@ PRINT 'Testing sp_generate_service_usage_report:';
 DECLARE @service_output NVARCHAR(MAX);
 DECLARE @service_message NVARCHAR(500);
 EXEC sp_generate_service_usage_report
+    @user_id = 1,
     @start_date = '2024-12-01',
     @end_date = '2024-12-31',
     @report_output = @service_output OUTPUT,

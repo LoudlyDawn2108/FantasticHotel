@@ -49,6 +49,7 @@ DECLARE @new_request_id INT;
 DECLARE @assigned_emp NVARCHAR(100);
 DECLARE @maint_message NVARCHAR(500);
 EXEC sp_create_maintenance_request
+    @user_id = 1,
     @room_id = 1,
     @title = 'Test Maintenance Request',
     @description = 'This is a test maintenance request',
@@ -66,6 +67,7 @@ DECLARE @response_hours DECIMAL(10,2);
 DECLARE @complete_message NVARCHAR(500);
 -- Use a valid request_id from test data
 EXEC sp_complete_maintenance
+    @user_id = 1,
     @request_id = 1,
     @actual_cost = 150.00,
     @completion_notes = 'Test completion',
