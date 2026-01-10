@@ -47,12 +47,13 @@ GO
 -- CORE TABLES
 -- =============================================
 
--- Customers Table
+-- Customers Table (with login credentials)
 CREATE TABLE CUSTOMERS (
     customer_id INT IDENTITY(1,1) PRIMARY KEY,
     first_name NVARCHAR(50) NOT NULL,
     last_name NVARCHAR(50) NOT NULL,
     email NVARCHAR(100) NOT NULL UNIQUE,
+    password_hash NVARCHAR(256),              -- Login credential
     phone NVARCHAR(20),
     address NVARCHAR(500),
     id_number NVARCHAR(50),
@@ -68,16 +69,17 @@ CREATE TABLE CUSTOMERS (
 );
 GO
 
--- Employees Table
+-- Employees Table (with login credentials and role)
 CREATE TABLE EMPLOYEES (
     employee_id INT IDENTITY(1,1) PRIMARY KEY,
     department_id INT NOT NULL,
+    role_id INT,                               -- FK to ROLES (for access control)
     first_name NVARCHAR(50) NOT NULL,
     last_name NVARCHAR(50) NOT NULL,
     email NVARCHAR(100) NOT NULL UNIQUE,
+    password_hash NVARCHAR(256),              -- Login credential
     phone NVARCHAR(20),
     address NVARCHAR(500),
-    position NVARCHAR(100) NOT NULL,
     salary DECIMAL(10, 2) CHECK (salary >= 0),
     hire_date DATE NOT NULL DEFAULT GETDATE(),
     birth_date DATE,
@@ -87,6 +89,7 @@ CREATE TABLE EMPLOYEES (
     is_active BIT DEFAULT 1,
     CONSTRAINT FK_Employees_Department FOREIGN KEY (department_id) 
         REFERENCES DEPARTMENTS(department_id)
+    -- Note: FK to ROLES added after ROLES table is created
 );
 GO
 
@@ -342,21 +345,15 @@ GO
 PRINT 'All tables and indexes created successfully.';
 GO
 -- =============================================
--- AUTHENTICATION & AUTHORIZATION SCHEMA
--- Shared Module: Security Management
--- =============================================
--- Simplified RBAC with:
--- - Roles with access levels
--- - User accounts with single role assignment
+-- AUTHENTICATION: ROLES TABLE
+-- Credentials stored directly in CUSTOMERS/EMPLOYEES
+-- Only EMPLOYEES have roles for access control
 -- =============================================
 
 USE HotelManagement;
 GO
 
--- =============================================
--- TABLE: ROLES
--- Defines system roles for access control
--- =============================================
+-- ROLES Table (for employee access control)
 IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'ROLES')
 BEGIN
     CREATE TABLE ROLES (
@@ -367,64 +364,20 @@ BEGIN
         is_active BIT DEFAULT 1,
         created_at DATETIME DEFAULT GETDATE()
     );
-    
-    PRINT 'ROLES table created successfully.';
+    PRINT 'ROLES table created.';
 END
 GO
 
--- =============================================
--- TABLE: USER_ACCOUNTS
--- Stores user login credentials with single role
--- =============================================
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'USER_ACCOUNTS')
+-- Add FK from EMPLOYEES to ROLES (after ROLES exists)
+IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'FK_Employees_Role')
 BEGIN
-    CREATE TABLE USER_ACCOUNTS (
-        user_id INT IDENTITY(1,1) PRIMARY KEY,
-        username NVARCHAR(50) NOT NULL UNIQUE,
-        password_hash NVARCHAR(256) NOT NULL,
-        email NVARCHAR(100) NOT NULL UNIQUE,
-        
-        -- Single role assignment
-        role_id INT NOT NULL,
-        
-        -- Link to either employee or customer
-        user_type NVARCHAR(20) NOT NULL,          -- 'Employee' or 'Customer'
-        employee_id INT NULL,
-        customer_id INT NULL,
-        
-        -- Account status
-        is_active BIT DEFAULT 1,
-        is_locked BIT DEFAULT 0,
-        failed_login_attempts INT DEFAULT 0,
-        
-        -- Timestamps
-        created_at DATETIME DEFAULT GETDATE(),
-        updated_at DATETIME DEFAULT GETDATE(),
-        last_login DATETIME NULL,
-        
-        CONSTRAINT FK_UserAccounts_Role FOREIGN KEY (role_id)
-            REFERENCES ROLES(role_id),
-        CONSTRAINT FK_UserAccounts_Employee FOREIGN KEY (employee_id)
-            REFERENCES EMPLOYEES(employee_id),
-        CONSTRAINT FK_UserAccounts_Customer FOREIGN KEY (customer_id)
-            REFERENCES CUSTOMERS(customer_id),
-        CONSTRAINT CK_UserType CHECK (user_type IN ('Employee', 'Customer')),
-        CONSTRAINT CK_UserLink CHECK (
-            (user_type = 'Employee' AND employee_id IS NOT NULL AND customer_id IS NULL) OR
-            (user_type = 'Customer' AND customer_id IS NOT NULL AND employee_id IS NULL)
-        )
-    );
-    
-    CREATE INDEX IX_UserAccounts_Username ON USER_ACCOUNTS(username);
-    CREATE INDEX IX_UserAccounts_RoleId ON USER_ACCOUNTS(role_id);
-    
-    PRINT 'USER_ACCOUNTS table created successfully.';
+    ALTER TABLE EMPLOYEES ADD CONSTRAINT FK_Employees_Role 
+        FOREIGN KEY (role_id) REFERENCES ROLES(role_id);
+    PRINT 'FK_Employees_Role constraint added.';
 END
 GO
 
--- =============================================
--- INSERT DEFAULT ROLES
--- =============================================
+-- Insert default roles
 IF NOT EXISTS (SELECT 1 FROM ROLES WHERE role_name = 'Administrator')
 BEGIN
     INSERT INTO ROLES (role_name, description, role_level) VALUES
@@ -437,15 +390,10 @@ BEGIN
     ('Cashier', 'Payments and invoices', 50),
     ('Housekeeping Staff', 'Room cleaning and status', 30),
     ('Maintenance Staff', 'Maintenance tasks', 30),
-    ('F&B Staff', 'Food and beverage service', 30),
-    ('Guest', 'Hotel guest self-service', 10);
-    
+    ('F&B Staff', 'Food and beverage service', 30);
     PRINT 'Default roles inserted.';
 END
 GO
 
-PRINT '================================================';
-PRINT 'Authentication Schema Created';
-PRINT 'Tables: ROLES, USER_ACCOUNTS';
-PRINT '================================================';
+PRINT 'Authentication: ROLES table created. Credentials in CUSTOMERS/EMPLOYEES.';
 GO

@@ -1,0 +1,229 @@
+@startchen
+' =============================================
+' HOTEL MANAGEMENT SYSTEM - ER DIAGRAM
+' PlantUML Chen's Notation
+' Credentials in CUSTOMERS/EMPLOYEES, Roles for EMPLOYEES only
+' =============================================
+
+' =============================================
+' LOOKUP ENTITIES
+' =============================================
+entity DEPARTMENTS {
+    department_id <<key>>
+    department_name
+    description
+    is_active
+}
+
+entity SERVICE_CATEGORIES {
+    category_id <<key>>
+    category_name
+    description
+    is_active
+}
+
+entity ROOM_TYPES {
+    type_id <<key>>
+    type_name
+    base_price
+    capacity
+    amenities
+}
+
+entity ROLES {
+    role_id <<key>>
+    role_name
+    role_level
+    description
+}
+
+' =============================================
+' CORE ENTITIES (with credentials)
+' =============================================
+entity CUSTOMERS {
+    customer_id <<key>>
+    first_name
+    last_name
+    email
+    password_hash
+    phone
+    loyalty_points
+    membership_tier
+    total_spending
+}
+
+entity EMPLOYEES {
+    employee_id <<key>>
+    first_name
+    last_name
+    email
+    password_hash
+    position
+    salary
+    hire_date
+    is_available
+}
+
+entity ROOMS {
+    room_id <<key>>
+    room_number
+    floor
+    status
+    notes
+}
+
+entity SERVICES {
+    service_id <<key>>
+    service_name
+    description
+    price
+    duration_minutes
+}
+
+' =============================================
+' TRANSACTIONAL ENTITIES
+' =============================================
+entity RESERVATIONS {
+    reservation_id <<key>>
+    check_in_date
+    check_out_date
+    num_guests
+    status
+    room_charge
+    service_charge
+    total_amount
+    paid_amount
+}
+
+entity PAYMENTS {
+    payment_id <<key>>
+    amount
+    payment_method
+    payment_date
+    status
+    transaction_ref
+}
+
+entity SERVICES_USED {
+    usage_id <<key>>
+    quantity
+    unit_price
+    total_price
+    used_date
+    status
+}
+
+' =============================================
+' OPERATIONAL ENTITIES
+' =============================================
+entity MAINTENANCE_REQUESTS {
+    request_id <<key>>
+    title
+    description
+    priority
+    status
+    estimated_cost
+    actual_cost
+}
+
+entity EMPLOYEE_SHIFTS {
+    shift_id <<key>>
+    shift_date
+    start_time
+    end_time
+    status
+}
+
+' =============================================
+' AUDIT ENTITIES
+' =============================================
+entity ROOM_STATUS_HISTORY {
+    history_id <<key>>
+    old_status
+    new_status
+    changed_at
+    reason
+}
+
+entity AUDIT_LOGS {
+    log_id <<key>>
+    table_name
+    operation
+    record_id
+    changed_at
+}
+
+' =============================================
+' RELATIONSHIPS
+' =============================================
+
+' Employee belongs to Department (N:1)
+relationship BELONGS_TO { }
+EMPLOYEES -N- BELONGS_TO
+BELONGS_TO -1- DEPARTMENTS
+
+' Employee has Role (N:1) - for access control
+relationship HAS_ROLE { }
+EMPLOYEES -N- HAS_ROLE
+HAS_ROLE -1- ROLES
+
+' Room has Type (N:1)
+relationship HAS_TYPE { }
+ROOMS -N- HAS_TYPE
+HAS_TYPE -1- ROOM_TYPES
+
+' Service in Category (N:1)
+relationship IN_CATEGORY { }
+SERVICES -N- IN_CATEGORY
+IN_CATEGORY -1- SERVICE_CATEGORIES
+
+' Customer makes Reservation (1:N)
+relationship MAKES { }
+CUSTOMERS -1- MAKES
+MAKES -N- RESERVATIONS
+
+' Room has Reservation (1:N)
+relationship BOOKED_FOR { }
+ROOMS -1- BOOKED_FOR
+BOOKED_FOR -N- RESERVATIONS
+
+' Reservation has Payment (1:N)
+relationship PAYS_FOR { }
+RESERVATIONS -1- PAYS_FOR
+PAYS_FOR -N- PAYMENTS
+
+' Customer has Payment (1:N)
+relationship PAID_BY { }
+CUSTOMERS -1- PAID_BY
+PAID_BY -N- PAYMENTS
+
+' Reservation uses Service (N:M via SERVICES_USED)
+relationship USES { }
+RESERVATIONS -1- USES
+USES -N- SERVICES_USED
+
+relationship OF_SERVICE { }
+SERVICES -1- OF_SERVICE
+OF_SERVICE -N- SERVICES_USED
+
+' Room has Maintenance (1:N)
+relationship NEEDS { }
+ROOMS -1- NEEDS
+NEEDS -N- MAINTENANCE_REQUESTS
+
+' Employee assigned Maintenance (1:N)
+relationship ASSIGNED { }
+EMPLOYEES -1- ASSIGNED
+ASSIGNED -N- MAINTENANCE_REQUESTS
+
+' Employee has Shifts (1:N)
+relationship WORKS { }
+EMPLOYEES -1- WORKS
+WORKS -N- EMPLOYEE_SHIFTS
+
+' Room has History (1:N)
+relationship HISTORY_OF { }
+ROOMS -1- HISTORY_OF
+HISTORY_OF -N- ROOM_STATUS_HISTORY
+
+@endchen
