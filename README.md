@@ -34,9 +34,16 @@ btl/
 │   ├── member2_payment_functions.sql
 │   ├── member3_customer_functions.sql
 │   └── member4_operations_functions.sql
-├── 06_tests/
-│   └── test_all_objects.sql            # Test script for all objects
+├── 06_tests/                           # Test scripts
+│   ├── test_all.sql                    # Test tất cả objects
+│   ├── test_member1_reservation.sql    # Phuc - Reservations
+│   ├── test_member2_payment.sql        # Khanh - Payments
+│   ├── test_member3_customer.sql       # Ninh - Customers
+│   └── test_member4_operations.sql     # Tung - Operations
 ├── 07_cursors/                         # Standalone cursors
+│   ├── member1_*.sql                   # Phuc - Reservation cursors
+│   ├── member2_*.sql                   # Khanh - Payment cursors
+│   ├── member3_*.sql                   # Ninh - Customer cursors
 │   └── member4_operations_cursor.sql   # Tung - Operations cursors
 ├── BUSINESS_PROCESSES.md               # Business process documentation
 ├── MEMBER_BUSINESS_PROCESS_VERIFICATION.md  # Process verification
@@ -55,7 +62,7 @@ Run the SQL files in this order:
 5. `04_triggers/*`
 6. `02_procedures/*` (All procedure files)
 7. `01_schema/03_insert_sample_data.sql` (includes auth sample users)
-8. `06_tests/test_all_objects.sql` (Optional)
+8. `06_tests/test_all.sql` (Optional - or test_member*.sql for individual)
 
 ---
 

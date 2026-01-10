@@ -53,9 +53,9 @@ PRINT 'Testing fn_get_customer_statistics:';
 SELECT * FROM dbo.fn_get_customer_statistics(1);
 GO
 
--- Test fn_get_maintenance_statistics (table function)
-PRINT 'Testing fn_get_maintenance_statistics:';
-SELECT * FROM dbo.fn_get_maintenance_statistics(30);
+-- Test fn_calculate_sla_status
+PRINT 'Testing fn_calculate_sla_status:';
+SELECT dbo.fn_calculate_sla_status('High', 'Open', DATEADD(HOUR, -10, GETDATE()), NULL) AS sla_status;
 GO
 
 -- =============================================
