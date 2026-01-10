@@ -122,23 +122,6 @@ BEGIN
         
         SET @customer_id = SCOPE_IDENTITY();
         
-        -- Create welcome notification
-        INSERT INTO NOTIFICATIONS (
-            notification_type, title, message,
-            related_table, related_id, recipient_type, recipient_id
-        )
-        VALUES (
-            'Welcome',
-            'Welcome to Our Hotel!',
-            'Dear ' + @first_name + ', welcome to the Hotel Management System! ' +
-            'You have been awarded ' + CAST(@welcome_points AS NVARCHAR) + ' welcome bonus points. ' +
-            'Enjoy your stays with us!',
-            'CUSTOMERS',
-            @customer_id,
-            'Customer',
-            @customer_id
-        );
-        
         COMMIT TRANSACTION;
         
         SET @message = 'Customer registered successfully! ID: ' + CAST(@customer_id AS NVARCHAR) + 

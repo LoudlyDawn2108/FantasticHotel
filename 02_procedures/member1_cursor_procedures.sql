@@ -14,7 +14,7 @@ GO
 -- =============================================
 -- CURSOR 1: sp_process_daily_checkins
 -- Processes all reservations scheduled for check-in today
--- Updates room status to 'Reserved' and sends notifications
+-- Updates room status to 'Reserved' for expected arrivals
 -- Uses CURSOR to iterate through today's check-ins
 -- Authorization: Receptionist+ (level 50)
 -- =============================================
@@ -80,22 +80,6 @@ BEGIN
             UPDATE ROOMS
             SET status = 'Reserved', updated_at = GETDATE()
             WHERE room_id = @room_id AND status = 'Available';
-            
-            -- Create notification for front desk
-            INSERT INTO NOTIFICATIONS (
-                notification_type, title, message,
-                related_table, related_id, recipient_type
-            )
-            VALUES (
-                'DailyCheckIn',
-                'Expected Arrival Today',
-                'Guest: ' + @customer_name + ' | Room: ' + @room_number + 
-                ' | Checkout: ' + FORMAT(@check_out_date, 'MMM dd') +
-                ' | Total: $' + CAST(@total_amount AS NVARCHAR),
-                'RESERVATIONS',
-                @reservation_id,
-                'Front Desk'
-            );
             
             SET @processed_count = @processed_count + 1;
             
@@ -234,22 +218,6 @@ BEGIN
                 END,
                 updated_at = GETDATE()
             WHERE customer_id = @customer_id;
-            
-            -- Create notification
-            INSERT INTO NOTIFICATIONS (
-                notification_type, title, message,
-                related_table, related_id, recipient_type
-            )
-            VALUES (
-                'NoShow',
-                'No-Show Processed',
-                'Reservation #' + CAST(@reservation_id AS NVARCHAR) + 
-                ' | Guest: ' + @customer_name + 
-                ' | Room ' + @room_number + ' released. Penalty: $' + CAST(@penalty_amount AS NVARCHAR),
-                'RESERVATIONS',
-                @reservation_id,
-                'Front Desk'
-            );
             
             SET @processed_count = @processed_count + 1;
             SET @total_penalty = @total_penalty + @penalty_amount;

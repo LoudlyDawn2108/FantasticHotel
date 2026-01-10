@@ -95,41 +95,8 @@ BEGIN
                 ELSE 'Low'
             END;
             
-            -- Create reminder notification for customer
-            INSERT INTO NOTIFICATIONS (
-                notification_type, title, message,
-                related_table, related_id, recipient_type, recipient_id
-            )
-            VALUES (
-                'PaymentReminder',
-                'Payment Reminder - $' + CAST(@outstanding_balance AS NVARCHAR) + ' Due',
-                'Dear ' + @customer_name + ', your reservation #' + CAST(@reservation_id AS NVARCHAR) +
-                ' from ' + FORMAT(@check_out_date, 'MMM dd, yyyy') + ' has an outstanding balance of $' + 
-                CAST(@outstanding_balance AS NVARCHAR) + '. Please settle at your earliest convenience.',
-                'RESERVATIONS',
-                @reservation_id,
-                'Customer',
-                @customer_id
-            );
-            
-            -- Create notification for finance team if high urgency
-            IF @urgency IN ('High', 'Critical')
-            BEGIN
-                INSERT INTO NOTIFICATIONS (
-                    notification_type, title, message,
-                    related_table, related_id, recipient_type
-                )
-                VALUES (
-                    'OverduePayment',
-                    @urgency + ' - Overdue Payment: $' + CAST(@outstanding_balance AS NVARCHAR),
-                    'Reservation #' + CAST(@reservation_id AS NVARCHAR) + ' | Guest: ' + @customer_name +
-                    ' | Days Overdue: ' + CAST(@days_since_checkout AS NVARCHAR) +
-                    ' | Balance: $' + CAST(@outstanding_balance AS NVARCHAR),
-                    'RESERVATIONS',
-                    @reservation_id,
-                    'Finance'
-                );
-            END
+            -- Track the outstanding payment (notifications removed)
+            -- Use vw_outstanding_payments view to check payment status
             
             SET @reminder_count = @reminder_count + 1;
             SET @total_outstanding = @total_outstanding + @outstanding_balance;

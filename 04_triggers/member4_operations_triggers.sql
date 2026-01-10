@@ -39,38 +39,13 @@ BEGIN
     FROM inserted i
     INNER JOIN deleted d ON i.room_id = d.room_id
     WHERE i.status <> d.status;
-    
-    -- Thông báo cho Housekeeping khi phòng cần dọn
-    INSERT INTO NOTIFICATIONS (notification_type, title, message, related_table, related_id, recipient_type)
-    SELECT 
-        'RoomCleaning',
-        'Room Ready for Cleaning',
-        'Room ' + i.room_number + ' is now ready for cleaning.',
-        'ROOMS',
-        i.room_id,
-        'Housekeeping'
-    FROM inserted i
-    INNER JOIN deleted d ON i.room_id = d.room_id
-    WHERE i.status = 'Cleaning' AND d.status <> 'Cleaning';
-    
-    -- Thông báo cho Front Desk khi phòng sẵn sàng
-    INSERT INTO NOTIFICATIONS (notification_type, title, message, related_table, related_id, recipient_type)
-    SELECT 
-        'RoomAvailable',
-        'Room Now Available',
-        'Room ' + i.room_number + ' is now available for check-in.',
-        'ROOMS',
-        i.room_id,
-        'Front Desk'
-    FROM inserted i
-    INNER JOIN deleted d ON i.room_id = d.room_id
-    WHERE i.status = 'Available' AND d.status IN ('Cleaning', 'Maintenance');
 END;
 GO
 
 -- =============================================
 -- TRIGGER 2: trg_high_priority_maintenance
 -- Cảnh báo khi có yêu cầu bảo trì khẩn cấp (High/Critical)
+-- (Notification functionality removed - use vw_maintenance_dashboard instead)
 -- =============================================
 CREATE OR ALTER TRIGGER trg_high_priority_maintenance
 ON MAINTENANCE_REQUESTS
@@ -78,49 +53,8 @@ AFTER INSERT
 AS
 BEGIN
     SET NOCOUNT ON;
-    
-    -- Thông báo cho bộ phận Bảo trì khi có yêu cầu High/Critical
-    INSERT INTO NOTIFICATIONS (notification_type, title, message, related_table, related_id, recipient_type)
-    SELECT 
-        'UrgentMaintenance',
-        CASE i.priority 
-            WHEN 'Critical' THEN '🚨 CRITICAL Maintenance'
-            ELSE '⚠️ High Priority Maintenance'
-        END,
-        'Room ' + r.room_number + ': ' + i.title + '. Priority: ' + i.priority,
-        'MAINTENANCE_REQUESTS',
-        i.request_id,
-        'Maintenance'
-    FROM inserted i
-    INNER JOIN ROOMS r ON i.room_id = r.room_id
-    WHERE i.priority IN ('High', 'Critical');
-    
-    -- Thông báo thêm cho Management nếu Critical
-    INSERT INTO NOTIFICATIONS (notification_type, title, message, related_table, related_id, recipient_type)
-    SELECT 
-        'CriticalAlert',
-        '🚨 CRITICAL Maintenance Alert',
-        'CRITICAL maintenance needed for Room ' + r.room_number + ': ' + i.title,
-        'MAINTENANCE_REQUESTS',
-        i.request_id,
-        'Management'
-    FROM inserted i
-    INNER JOIN ROOMS r ON i.room_id = r.room_id
-    WHERE i.priority = 'Critical';
-    
-    -- Thông báo cho nhân viên được phân công (nếu có)
-    INSERT INTO NOTIFICATIONS (notification_type, title, message, related_table, related_id, recipient_type, recipient_id)
-    SELECT 
-        'TaskAssignment',
-        'New Task Assigned',
-        'You have been assigned: ' + i.title + ' (Room ' + r.room_number + '). Priority: ' + i.priority,
-        'MAINTENANCE_REQUESTS',
-        i.request_id,
-        'Employee',
-        i.assigned_to
-    FROM inserted i
-    INNER JOIN ROOMS r ON i.room_id = r.room_id
-    WHERE i.assigned_to IS NOT NULL;
+    -- High priority maintenance is tracked via vw_maintenance_dashboard with SLA status
+    -- No direct notification needed - staff should check dashboard
 END;
 GO
 

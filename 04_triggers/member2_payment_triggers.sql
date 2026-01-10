@@ -46,7 +46,7 @@ BEGIN
             WHERE customer_id = @customer_id;
             
             -- Points are already added by sp_process_payment procedure
-            -- This trigger handles tier upgrade notifications
+            -- This trigger handles tier upgrades
             
             -- Get new total spending
             SELECT @new_total_spending = total_spending
@@ -56,44 +56,13 @@ BEGIN
             -- Determine if customer qualifies for upgrade
             SET @new_tier = dbo.fn_get_customer_tier(@new_total_spending);
             
-            -- If tier changed, create notification
+            -- If tier changed, update customer
             IF @new_tier <> @customer_tier
             BEGIN
                 -- Update customer tier
                 UPDATE CUSTOMERS
                 SET membership_tier = @new_tier, updated_at = GETDATE()
                 WHERE customer_id = @customer_id;
-                
-                -- Create congratulatory notification
-                INSERT INTO NOTIFICATIONS (
-                    notification_type, title, message, 
-                    related_table, related_id, recipient_type, recipient_id
-                )
-                VALUES (
-                    'TierUpgrade',
-                    'Congratulations! Membership Upgraded',
-                    'Your membership has been upgraded from ' + @customer_tier + 
-                    ' to ' + @new_tier + '! Enjoy enhanced benefits and discounts.',
-                    'CUSTOMERS',
-                    @customer_id,
-                    'Customer',
-                    @customer_id
-                );
-                
-                -- Also notify front desk
-                INSERT INTO NOTIFICATIONS (
-                    notification_type, title, message, 
-                    related_table, related_id, recipient_type
-                )
-                VALUES (
-                    'TierUpgrade',
-                    'Customer Tier Upgrade',
-                    'Customer #' + CAST(@customer_id AS NVARCHAR) + 
-                    ' has been upgraded to ' + @new_tier + ' tier.',
-                    'CUSTOMERS',
-                    @customer_id,
-                    'Front Desk'
-                );
             END
         END
         
@@ -195,18 +164,6 @@ BEGIN
             NULL,
             @user_name,
             APP_NAME()
-        FROM deleted d;
-        
-        -- Create critical notification for payment deletion
-        INSERT INTO NOTIFICATIONS (notification_type, title, message, related_table, recipient_type)
-        SELECT 
-            'SecurityAlert',
-            'Payment Record Deleted',
-            'Payment #' + CAST(d.payment_id AS NVARCHAR) + 
-            ' for $' + CAST(d.amount AS NVARCHAR) + 
-            ' was deleted by ' + @user_name,
-            'PAYMENTS',
-            'Management'
         FROM deleted d;
     END
 END;

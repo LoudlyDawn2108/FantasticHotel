@@ -251,21 +251,6 @@ BEGIN
         WHERE room_id = @room_id
         AND status = 'Maintenance';
         
-        -- Thông báo hoàn thành cho Front Desk
-        INSERT INTO NOTIFICATIONS (
-            notification_type, title, message,
-            related_table, related_id, recipient_type
-        )
-        VALUES (
-            'MaintenanceComplete',
-            'Maintenance Completed',
-            'Request #' + CAST(@request_id AS NVARCHAR) + ' for Room ' + @room_number + 
-            ' completed. Response time: ' + CAST(ROUND(@response_time_hours, 1) AS NVARCHAR) + ' hours.',
-            'MAINTENANCE_REQUESTS',
-            @request_id,
-            'Front Desk'
-        );
-        
         COMMIT TRANSACTION;
         
         SET @message = 'Maintenance completed successfully. Request #' + CAST(@request_id AS NVARCHAR) +

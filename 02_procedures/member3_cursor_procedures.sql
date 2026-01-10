@@ -108,24 +108,7 @@ BEGIN
                 SET loyalty_points = loyalty_points + @bonus_points
                 WHERE customer_id = @customer_id;
                 
-                -- Create notification for customer
-                INSERT INTO NOTIFICATIONS (
-                    notification_type, title, message,
-                    related_table, related_id, recipient_type, recipient_id
-                )
-                VALUES (
-                    'TierUpgrade',
-                    '🎉 Congratulations! Welcome to ' + @new_tier + ' Tier!',
-                    'Dear ' + @customer_name + ', thank you for your loyalty! You have been upgraded from ' +
-                    @current_tier + ' to ' + @new_tier + ' tier. Your new benefits include: ' + @upgrade_benefits +
-                    '. You also received ' + CAST(@bonus_points AS NVARCHAR) + ' bonus points!',
-                    'CUSTOMERS',
-                    @customer_id,
-                    'Customer',
-                    @customer_id
-                );
-                
-                -- Log for management
+                -- Log for management (notifications removed)
                 INSERT INTO AUDIT_LOGS (
                     table_name, operation, record_id, old_values, new_values, changed_by
                 )

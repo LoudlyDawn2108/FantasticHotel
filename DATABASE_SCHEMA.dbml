@@ -213,20 +213,6 @@ Table AUDIT_LOGS {
   application nvarchar(100)
 }
 
-Table NOTIFICATIONS {
-  notification_id int [pk, increment]
-  notification_type nvarchar(50) [not null]
-  title nvarchar(200) [not null]
-  message nvarchar(1000)
-  related_table nvarchar(100)
-  related_id int
-  recipient_type nvarchar(50)
-  recipient_id int
-  is_read bit [default: 0]
-  created_at datetime [default: `GETDATE()`]
-  read_at datetime
-}
-
 // =============================================
 // TABLE GROUPS (for visual organization)
 // =============================================
@@ -258,5 +244,4 @@ TableGroup Operations {
 TableGroup Audit {
   ROOM_STATUS_HISTORY
   AUDIT_LOGS
-  NOTIFICATIONS
 }
