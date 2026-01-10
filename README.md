@@ -187,9 +187,8 @@ Each member has: **2 Procedures** + **2 Cursors** + **2 Views** + **2 Triggers**
 | View | `vw_employee_performance` | Staff metrics and workload |
 | Trigger | `trg_room_status_history` | Tracks room status changes |
 | Trigger | `trg_high_priority_maintenance` | Alerts for urgent maintenance |
-| Function | `fn_calculate_room_turnaround_time` | Room cleaning metrics |
-| Function | `fn_get_available_staff` | Available staff count |
-| Function | `fn_get_maintenance_statistics` | Maintenance analytics |
+| Function | `fn_get_available_staff` | Available staff count (used in Procedure) |
+| Function | `fn_calculate_sla_status` | SLA status calculation (used in View) |
 
 ---
 
