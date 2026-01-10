@@ -11,35 +11,21 @@ BEGIN
     SET NOCOUNT ON;
     DECLARE @cust_id INT, @total DECIMAL(10,2), @paid DECIMAL(10,2);
     DECLARE @tier NVARCHAR(20), @points INT;
-    
     BEGIN TRY
         BEGIN TRANSACTION;
-        
         SELECT @cust_id = customer_id, @total = total_amount, @paid = paid_amount
         FROM RESERVATIONS WHERE reservation_id = @res_id;
-        
         IF @cust_id IS NULL BEGIN ROLLBACK; RETURN -1; END
-        
-        -- Limit to remaining balance
-        IF @amount > (@total - @paid) SET @amount = @total - @paid;
-        
-        -- Insert payment
+        IF @amount > (@total - @paid) SET @amount = @total - @paid;        
         INSERT INTO PAYMENTS (reservation_id, customer_id, amount, payment_method, status)
         VALUES (@res_id, @cust_id, @amount, @method, 'Completed');
         SET @pay_id = SCOPE_IDENTITY();
-        
-        -- Update reservation
         UPDATE RESERVATIONS SET paid_amount = paid_amount + @amount WHERE reservation_id = @res_id;
-        
-        -- Calculate loyalty points (10 per $100, tier bonus)
         SELECT @tier = membership_tier FROM CUSTOMERS WHERE customer_id = @cust_id;
         SET @points = FLOOR(@amount / 100) * 10 * 
             CASE @tier WHEN 'Platinum' THEN 2 WHEN 'Gold' THEN 1.5 WHEN 'Silver' THEN 1.2 ELSE 1 END;
-        
-        -- Update customer
         UPDATE CUSTOMERS SET loyalty_points = loyalty_points + @points,
-            total_spending = total_spending + @amount WHERE customer_id = @cust_id;
-        
+            total_spending = total_spending + @amount WHERE customer_id = @cust_id;      
         COMMIT;
         RETURN 0;
     END TRY
@@ -62,8 +48,6 @@ BEGIN
     DECLARE @total DECIMAL(10,2), @paid DECIMAL(10,2);
     DECLARE @svc_name NVARCHAR(100), @qty INT, @price DECIMAL(10,2);
     DECLARE @services NVARCHAR(MAX) = '';
-    
-    -- Get reservation info
     SELECT @cust = c.first_name + ' ' + c.last_name, @room = rm.room_number,
            @checkin = r.check_in_date, @checkout = r.check_out_date,
            @total = r.total_amount, @paid = r.paid_amount
@@ -71,15 +55,11 @@ BEGIN
     JOIN CUSTOMERS c ON r.customer_id = c.customer_id
     JOIN ROOMS rm ON r.room_id = rm.room_id
     WHERE r.reservation_id = @res_id;
-    
     IF @cust IS NULL BEGIN SET @invoice = 'Not found'; RETURN -1; END
-    
-    -- CURSOR: Get services
     DECLARE cur CURSOR FOR
         SELECT s.service_name, su.quantity, su.total_price
         FROM SERVICES_USED su JOIN SERVICES s ON su.service_id = s.service_id
         WHERE su.reservation_id = @res_id;
-    
     OPEN cur;
     FETCH NEXT FROM cur INTO @svc_name, @qty, @price;
     WHILE @@FETCH_STATUS = 0
@@ -89,8 +69,6 @@ BEGIN
         FETCH NEXT FROM cur INTO @svc_name, @qty, @price;
     END
     CLOSE cur; DEALLOCATE cur;
-    
-    -- Build invoice
     SET @invoice = '=== INVOICE ===' + CHAR(13) +
         'Guest: ' + @cust + CHAR(13) +
         'Room: ' + @room + CHAR(13) +
