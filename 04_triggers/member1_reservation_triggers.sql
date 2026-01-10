@@ -46,7 +46,7 @@ BEGIN
     
     WHILE @@FETCH_STATUS = 0
     BEGIN
-        -- Get customer name for notifications
+        -- Get customer name
         SELECT @customer_name = first_name + ' ' + last_name 
         FROM CUSTOMERS WHERE customer_id = @customer_id;
         
@@ -62,12 +62,6 @@ BEGIN
             UPDATE RESERVATIONS
             SET actual_check_in = GETDATE()
             WHERE reservation_id = @reservation_id AND actual_check_in IS NULL;
-            
-            -- Create notification
-            INSERT INTO NOTIFICATIONS (notification_type, title, message, related_table, related_id, recipient_type)
-            VALUES ('CheckIn', 'Guest Checked In', 
-                    @customer_name + ' has checked into Room ' + (SELECT room_number FROM ROOMS WHERE room_id = @room_id),
-                    'RESERVATIONS', @reservation_id, 'Front Desk');
         END
         
         ELSE IF @new_status = 'CheckedOut'
@@ -81,12 +75,6 @@ BEGIN
             UPDATE RESERVATIONS
             SET actual_check_out = GETDATE()
             WHERE reservation_id = @reservation_id AND actual_check_out IS NULL;
-            
-            -- Create notification for housekeeping
-            INSERT INTO NOTIFICATIONS (notification_type, title, message, related_table, related_id, recipient_type)
-            VALUES ('Cleaning', 'Room Needs Cleaning', 
-                    'Room ' + (SELECT room_number FROM ROOMS WHERE room_id = @room_id) + ' is ready for cleaning after checkout.',
-                    'ROOMS', @room_id, 'Housekeeping');
         END
         
         ELSE IF @new_status = 'Cancelled'
@@ -114,12 +102,6 @@ BEGIN
             UPDATE ROOMS 
             SET status = 'Available', updated_at = GETDATE()
             WHERE room_id = @room_id AND status = 'Reserved';
-            
-            -- Create notification
-            INSERT INTO NOTIFICATIONS (notification_type, title, message, related_table, related_id, recipient_type)
-            VALUES ('NoShow', 'Guest No Show', 
-                    @customer_name + ' did not show for reservation #' + CAST(@reservation_id AS NVARCHAR),
-                    'RESERVATIONS', @reservation_id, 'Front Desk');
         END
         
         FETCH NEXT FROM status_cursor INTO @reservation_id, @room_id, @old_status, @new_status, @customer_id;

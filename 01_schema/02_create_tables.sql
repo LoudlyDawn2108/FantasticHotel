@@ -291,22 +291,6 @@ CREATE TABLE AUDIT_LOGS (
 );
 GO
 
--- Notifications Table (for triggers to insert alerts)
-CREATE TABLE NOTIFICATIONS (
-    notification_id INT IDENTITY(1,1) PRIMARY KEY,
-    notification_type NVARCHAR(50) NOT NULL,
-    title NVARCHAR(200) NOT NULL,
-    message NVARCHAR(1000),
-    related_table NVARCHAR(100),
-    related_id INT,
-    recipient_type NVARCHAR(50),
-    recipient_id INT,
-    is_read BIT DEFAULT 0,
-    created_at DATETIME DEFAULT GETDATE(),
-    read_at DATETIME
-);
-GO
-
 -- =============================================
 -- INDEXES FOR PERFORMANCE
 -- =============================================

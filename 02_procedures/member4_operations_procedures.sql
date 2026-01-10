@@ -19,6 +19,7 @@ CREATE OR ALTER PROCEDURE sp_create_maintenance_request
     @description NVARCHAR(1000) = NULL,
     @priority NVARCHAR(20) = 'Medium',
     @estimated_cost DECIMAL(10,2) = NULL,
+    @created_by INT = NULL,
     @request_id INT OUTPUT,
     @assigned_employee NVARCHAR(100) OUTPUT,
     @message NVARCHAR(500) OUTPUT
@@ -249,21 +250,6 @@ BEGIN
             updated_at = GETDATE()
         WHERE room_id = @room_id
         AND status = 'Maintenance';
-        
-        -- Thông báo hoàn thành cho Front Desk
-        INSERT INTO NOTIFICATIONS (
-            notification_type, title, message,
-            related_table, related_id, recipient_type
-        )
-        VALUES (
-            'MaintenanceComplete',
-            'Maintenance Completed',
-            'Request #' + CAST(@request_id AS NVARCHAR) + ' for Room ' + @room_number + 
-            ' completed. Response time: ' + CAST(ROUND(@response_time_hours, 1) AS NVARCHAR) + ' hours.',
-            'MAINTENANCE_REQUESTS',
-            @request_id,
-            'Front Desk'
-        );
         
         COMMIT TRANSACTION;
         
