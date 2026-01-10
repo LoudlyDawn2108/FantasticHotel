@@ -200,34 +200,6 @@ This document describes the user requirements for the **Hotel Management System 
 
 ---
 
-### GR-5: Submit Review
-
-**User Story:** *"As a guest who has completed a stay, I want to rate my experience (1-5 stars) and leave a written review so that the hotel can improve and other guests can make informed decisions."*
-
-**Acceptance Criteria:**
-- Only allow reviews for completed stays (status = 'CheckedOut')
-- Submit star rating (1-5)
-- Write optional text review
-- View my submitted reviews
-
----
-
-#### Supporting Tables & Fields
-
-**Table: `REVIEWS`** - Guest feedback
-
-| Field | Type | Rationale |
-|-------|------|-----------|
-| `review_id` | INT PK | Unique identifier |
-| `reservation_id` | INT FK | Links to completed stay |
-| `customer_id` | INT FK | Who wrote the review |
-| `rating` | INT | 1-5 star rating |
-| `comment` | NVARCHAR(1000) | Written feedback |
-| `created_at` | DATETIME | When review was submitted |
-| `is_published` | BIT | Whether publicly visible |
-
----
-
 ### 2.2 Staff Operations
 
 ### BR-1: Room Booking

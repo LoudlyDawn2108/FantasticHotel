@@ -248,29 +248,6 @@ CREATE TABLE EMPLOYEE_SHIFTS (
 );
 GO
 
--- Reviews Table
-CREATE TABLE REVIEWS (
-    review_id INT IDENTITY(1,1) PRIMARY KEY,
-    customer_id INT NOT NULL,
-    reservation_id INT,
-    room_id INT,
-    rating INT NOT NULL CHECK (rating BETWEEN 1 AND 5),
-    title NVARCHAR(200),
-    comment NVARCHAR(2000),
-    response NVARCHAR(1000),
-    responded_at DATETIME,
-    responded_by INT,
-    review_date DATETIME DEFAULT GETDATE(),
-    is_public BIT DEFAULT 1,
-    CONSTRAINT FK_Reviews_Customer FOREIGN KEY (customer_id) 
-        REFERENCES CUSTOMERS(customer_id),
-    CONSTRAINT FK_Reviews_Reservation FOREIGN KEY (reservation_id) 
-        REFERENCES RESERVATIONS(reservation_id),
-    CONSTRAINT FK_Reviews_Room FOREIGN KEY (room_id) 
-        REFERENCES ROOMS(room_id)
-);
-GO
-
 -- =============================================
 -- AUDIT & HISTORY TABLES
 -- =============================================
