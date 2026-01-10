@@ -41,6 +41,7 @@ Table CUSTOMERS {
   first_name nvarchar(50) [not null]
   last_name nvarchar(50) [not null]
   email nvarchar(100) [not null, unique]
+  password_hash nvarchar(256) [note: 'Login credential']
   phone nvarchar(20)
   address nvarchar(500)
   id_number nvarchar(50)
@@ -58,9 +59,11 @@ Table CUSTOMERS {
 Table EMPLOYEES {
   employee_id int [pk, increment]
   department_id int [not null, ref: > DEPARTMENTS.department_id]
+  role_id int [ref: > ROLES.role_id, note: 'For access control']
   first_name nvarchar(50) [not null]
   last_name nvarchar(50) [not null]
   email nvarchar(100) [not null, unique]
+  password_hash nvarchar(256) [note: 'Login credential']
   phone nvarchar(20)
   address nvarchar(500)
   position nvarchar(100) [not null]
@@ -187,6 +190,21 @@ Table EMPLOYEE_SHIFTS {
 }
 
 // =============================================
+// AUTHENTICATION: ROLES TABLE
+// Credentials stored in CUSTOMERS/EMPLOYEES
+// Only EMPLOYEES have role_id for access control
+// =============================================
+
+Table ROLES {
+  role_id int [pk, increment]
+  role_name nvarchar(50) [not null, unique]
+  description nvarchar(500)
+  role_level int [not null, default: 1, note: 'Higher level = more access']
+  is_active bit [default: 1]
+  created_at datetime [default: `GETDATE()`]
+}
+
+// =============================================
 // AUDIT & HISTORY TABLES
 // =============================================
 
@@ -244,4 +262,8 @@ TableGroup Operations {
 TableGroup Audit {
   ROOM_STATUS_HISTORY
   AUDIT_LOGS
+}
+
+TableGroup Authentication {
+  ROLES
 }

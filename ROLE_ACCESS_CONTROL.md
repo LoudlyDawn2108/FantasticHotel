@@ -165,16 +165,15 @@
 
 ---
 
-## 5. Authorization Functions
+## 5. Authorization Model
 
-### fn_get_user_role_level(@user_id)
-Returns the role level (10-100) for a given user.
+### Simplified Design
+- **Credentials** stored directly in `CUSTOMERS.password_hash` and `EMPLOYEES.password_hash`
+- **Roles** only for employees via `EMPLOYEES.role_id` → `ROLES.role_id`
+- **Customers** don't need roles (backend determines client type for login)
 
-### fn_user_can_access(@user_id, @min_level)
-Returns 1 if user's role level >= min_level, 0 otherwise.
-
-### fn_user_has_role(@user_id, @role_name)
-Returns 1 if user has the specified role, 0 otherwise.
+### fn_get_employee_role_level(@employee_id)
+Returns the role level (10-100) for a given employee.
 
 ---
 
@@ -183,30 +182,24 @@ Returns 1 if user has the specified role, 0 otherwise.
 All protected procedures check authorization at the start:
 
 ```sql
--- Check minimum access level
-IF dbo.fn_get_user_role_level(@user_id) < 50
+-- Check minimum access level for employees
+DECLARE @level INT;
+SELECT @level = r.role_level FROM EMPLOYEES e 
+    JOIN ROLES r ON e.role_id = r.role_id 
+    WHERE e.employee_id = @employee_id;
+
+IF ISNULL(@level, 0) < 50
 BEGIN
     SET @message = 'Access denied. Insufficient permissions.';
-    RETURN -403;
-END
-
--- For guest access to own records only
-IF dbo.fn_get_user_role_level(@user_id) < 50 
-   AND @customer_id <> (SELECT customer_id FROM USER_ACCOUNTS WHERE user_id = @user_id)
-BEGIN
-    SET @message = 'Access denied. You can only access your own records.';
     RETURN -403;
 END
 ```
 
 ---
 
-## 7. Default Test Accounts
+## 7. Notes
 
-| Username | Role | Level | Password |
-|----------|------|-------|----------|
-| admin | Administrator | 100 | Password123 |
-| manager | General Manager | 90 | Password123 |
-| reception1 | Receptionist | 50 | Password123 |
-| cashier1 | Cashier | 50 | Password123 |
-| guest1 | Guest | 10 | Password123 |
+- Customers login via their email + `password_hash` in `CUSTOMERS` table
+- Employees login via their email + `password_hash` in `EMPLOYEES` table
+- Backend service determines login type based on client application
+- Role-based access applies only to employee operations
