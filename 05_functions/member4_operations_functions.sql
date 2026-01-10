@@ -1,20 +1,20 @@
 -- =============================================
--- Tung: OPERATIONS & HR MANAGEMENT
--- FUNCTIONS
+-- Tung: QUẢN LÝ VẬN HÀNH & NHÂN SỰ
+-- HÀM (FUNCTIONS)
 -- =============================================
 
 USE HotelManagement;
 GO
 
 -- =============================================
--- FUNCTION 1: fn_calculate_room_turnaround_time
--- Returns average time to prepare room for next
--- guest (from checkout to available)
+-- HÀM 1: fn_calculate_room_turnaround_time
+-- Tính thời gian trung bình chuẩn bị phòng cho khách tiếp theo
+-- (từ checkout đến available)
 -- =============================================
 CREATE OR ALTER FUNCTION fn_calculate_room_turnaround_time
 (
-    @room_id INT = NULL,  -- If NULL, calculate for all rooms
-    @days_back INT = 30   -- Look back period in days
+    @room_id INT = NULL,  -- Nếu NULL, tính cho tất cả phòng
+    @days_back INT = 30   -- Số ngày lùi lại
 )
 RETURNS TABLE
 AS
@@ -60,7 +60,7 @@ RETURN
     
     UNION ALL
     
-    -- Overall summary
+    -- Tổng kết chung
     SELECT 
         0 AS room_id,
         'OVERALL AVERAGE' AS room_number,
@@ -76,14 +76,13 @@ RETURN
             ELSE 'Needs Improvement'
         END AS performance_rating
     FROM TurnaroundData
-    WHERE @room_id IS NULL  -- Only show overall when not filtering by room
+    WHERE @room_id IS NULL  -- Chỉ hiển thị tổng kết khi không lọc theo phòng
 );
 GO
 
 -- =============================================
--- FUNCTION 2: fn_get_available_staff
--- Returns count of available staff for a
--- department on a given date
+-- HÀM 2: fn_get_available_staff
+-- Đếm số nhân viên có sẵn trong bộ phận vào ngày cụ thể
 -- =============================================
 CREATE OR ALTER FUNCTION fn_get_available_staff
 (
@@ -104,10 +103,10 @@ BEGIN
     AND e.is_active = 1
     AND e.is_available = 1
     AND (
-        -- Either has a shift scheduled for today
+        -- Có ca làm hôm nay
         es.shift_id IS NOT NULL
         OR
-        -- Or is simply marked as available (for flexibility)
+        -- Hoặc đang rảnh
         e.is_available = 1
     );
     
@@ -116,9 +115,8 @@ END;
 GO
 
 -- =============================================
--- FUNCTION 3: fn_get_maintenance_statistics
--- Returns comprehensive maintenance statistics
--- as a table
+-- HÀM 3: fn_get_maintenance_statistics
+-- Thống kê bảo trì toàn diện dưới dạng bảng
 -- =============================================
 CREATE OR ALTER FUNCTION fn_get_maintenance_statistics
 (
@@ -129,7 +127,7 @@ AS
 RETURN
 (
     SELECT 
-        -- Overall counts
+        -- Tổng số yêu cầu
         (SELECT COUNT(*) FROM MAINTENANCE_REQUESTS 
          WHERE created_at >= DATEADD(DAY, -@days_back, GETDATE())) AS total_requests,
         
@@ -141,7 +139,7 @@ RETURN
          WHERE status IN ('Open', 'InProgress')
          AND created_at >= DATEADD(DAY, -@days_back, GETDATE())) AS pending_requests,
         
-        -- By Priority
+        -- Theo mức độ ưu tiên
         (SELECT COUNT(*) FROM MAINTENANCE_REQUESTS 
          WHERE priority = 'Critical'
          AND created_at >= DATEADD(DAY, -@days_back, GETDATE())) AS critical_count,
@@ -158,13 +156,13 @@ RETURN
          WHERE priority = 'Low'
          AND created_at >= DATEADD(DAY, -@days_back, GETDATE())) AS low_count,
         
-        -- Time metrics
+        -- Chỉ số thời gian
         (SELECT AVG(CAST(DATEDIFF(MINUTE, created_at, completed_at) AS DECIMAL) / 60)
          FROM MAINTENANCE_REQUESTS 
          WHERE status = 'Completed' AND completed_at IS NOT NULL
          AND created_at >= DATEADD(DAY, -@days_back, GETDATE())) AS avg_resolution_hours,
         
-        -- Cost metrics
+        -- Chỉ số chi phí
         (SELECT SUM(ISNULL(actual_cost, 0)) 
          FROM MAINTENANCE_REQUESTS 
          WHERE status = 'Completed'
@@ -175,7 +173,7 @@ RETURN
          WHERE status = 'Completed' AND actual_cost IS NOT NULL
          AND created_at >= DATEADD(DAY, -@days_back, GETDATE())) AS avg_cost_per_request,
         
-        -- SLA Performance
+        -- Hiệu suất SLA
         (SELECT COUNT(*) FROM MAINTENANCE_REQUESTS mr
          WHERE mr.status = 'Completed'
          AND mr.created_at >= DATEADD(DAY, -@days_back, GETDATE())
@@ -186,7 +184,7 @@ RETURN
              (mr.priority = 'Low' AND DATEDIFF(HOUR, mr.created_at, mr.completed_at) <= 48)
          )) AS sla_met_count,
         
-        -- Completion rate
+        -- Tỷ lệ hoàn thành
         CASE 
             WHEN (SELECT COUNT(*) FROM MAINTENANCE_REQUESTS 
                   WHERE created_at >= DATEADD(DAY, -@days_back, GETDATE())) > 0
