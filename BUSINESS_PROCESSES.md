@@ -539,7 +539,6 @@ graph TB
         subgraph "Customer Module"
             UC17[Register Customer]
             UC18[View History]
-            UC19[Submit Review]
             UC20[View Loyalty Status]
         end
         
@@ -554,7 +553,6 @@ graph TB
     Guest((Guest)) --> UC1
     Guest --> UC2
     Guest --> UC10
-    Guest --> UC19
     Guest --> UC20
     
     Receptionist((Receptionist)) --> UC1
@@ -597,8 +595,7 @@ graph TB
 | UC-G05 | Request Service | Guest orders room service, spa, etc. | `sp_add_service_to_reservation` |
 | UC-G06 | Make Payment | Guest pays for stay and services | `sp_process_payment` |
 | UC-G07 | View Bill | Guest reviews current charges | `fn_calculate_total_bill` |
-| UC-G08 | Submit Review | Guest provides feedback on stay | REVIEWS table |
-| UC-G09 | View Loyalty Status | Guest checks points and tier | `vw_customer_history` |
+| UC-G08 | View Loyalty Status | Guest checks points and tier | `vw_customer_history` |
 | UC-G10 | Report Issue | Guest reports room maintenance issue | `sp_create_maintenance_request` |
 
 ### 6.2 Receptionist Use Cases
@@ -687,7 +684,6 @@ graph TB
 erDiagram
     CUSTOMERS ||--o{ RESERVATIONS : makes
     CUSTOMERS ||--o{ PAYMENTS : pays
-    CUSTOMERS ||--o{ REVIEWS : writes
     
     ROOMS ||--o{ RESERVATIONS : booked_for
     ROOMS }|--|| ROOM_TYPES : has

@@ -322,20 +322,6 @@ INSERT INTO EMPLOYEE_SHIFTS (employee_id, shift_date, start_time, end_time, stat
 (17, '2024-12-28', '18:00', '06:00', 'Scheduled');
 GO
 
--- =============================================
--- REVIEWS DATA
--- =============================================
-
-INSERT INTO REVIEWS (customer_id, reservation_id, room_id, rating, title, comment, review_date, is_public) VALUES
-(1, 1, 3, 5, 'Excellent Stay!', 'The room was spotless and the staff was incredibly helpful. Will definitely return!', '2024-10-06 10:00:00', 1),
-(2, 2, 12, 4, 'Very Good Experience', 'Nice room with great city view. Breakfast could be better but overall satisfied.', '2024-10-13 14:00:00', 1),
-(3, 3, 22, 5, 'Luxury at Its Best', 'The deluxe room exceeded expectations. Spa services were amazing!', '2024-10-21 09:00:00', 1),
-(4, 4, 28, 4, 'Great for Families', 'Spacious suite perfect for our family. Kids loved the pool!', '2024-11-05 11:00:00', 1),
-(5, 5, 1, 3, 'Decent Budget Option', 'Basic room for the price. Clean but could use some updates.', '2024-11-12 15:00:00', 1),
-(6, 6, 21, 5, 'Will Return Soon!', 'Perfect location, beautiful room, and exceptional service. 10/10!', '2024-11-19 12:00:00', 1);
-GO
-
-PRINT 'Sample data inserted successfully.';
 GO
 -- =============================================
 -- SAMPLE DATA FOR AUTHENTICATION TABLES

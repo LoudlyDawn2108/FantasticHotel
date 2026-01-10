@@ -52,18 +52,7 @@ SELECT
      WHERE res.room_id = r.room_id 
      AND res.status IN ('Confirmed', 'Pending')
      AND res.check_in_date > CAST(GETDATE() AS DATE)
-    ) AS upcoming_reservations,
-    
-    -- Average rating for this room
-    ISNULL(
-        (SELECT AVG(CAST(rating AS DECIMAL(3,2))) 
-         FROM REVIEWS rev 
-         WHERE rev.room_id = r.room_id),
-        0
-    ) AS average_rating,
-    
-    -- Number of reviews
-    (SELECT COUNT(*) FROM REVIEWS rev WHERE rev.room_id = r.room_id) AS review_count
+    ) AS upcoming_reservations
 
 FROM ROOMS r
 INNER JOIN ROOM_TYPES rt ON r.type_id = rt.type_id

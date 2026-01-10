@@ -186,21 +186,6 @@ Table EMPLOYEE_SHIFTS {
   created_at datetime [default: `GETDATE()`]
 }
 
-Table REVIEWS {
-  review_id int [pk, increment]
-  customer_id int [not null, ref: > CUSTOMERS.customer_id]
-  reservation_id int [ref: > RESERVATIONS.reservation_id]
-  room_id int [ref: > ROOMS.room_id]
-  rating int [not null, note: '1-5 stars']
-  title nvarchar(200)
-  comment nvarchar(2000)
-  response nvarchar(1000)
-  responded_at datetime
-  responded_by int
-  review_date datetime [default: `GETDATE()`]
-  is_public bit [default: 1]
-}
-
 // =============================================
 // AUDIT & HISTORY TABLES
 // =============================================
@@ -268,7 +253,6 @@ TableGroup Transactions {
 TableGroup Operations {
   MAINTENANCE_REQUESTS
   EMPLOYEE_SHIFTS
-  REVIEWS
 }
 
 TableGroup Audit {

@@ -67,12 +67,6 @@ SELECT
      WHERE r.customer_id = c.customer_id 
      ORDER BY r.created_at DESC) AS last_room,
     
-    -- Review statistics
-    (SELECT COUNT(*) FROM REVIEWS rv WHERE rv.customer_id = c.customer_id) AS reviews_given,
-    
-    (SELECT ISNULL(AVG(CAST(rating AS DECIMAL(3,2))), 0) FROM REVIEWS rv 
-     WHERE rv.customer_id = c.customer_id) AS average_rating_given,
-    
     -- Customer status
     CASE 
         WHEN DATEDIFF(DAY, 

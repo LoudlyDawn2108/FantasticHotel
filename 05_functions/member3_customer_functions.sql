@@ -160,11 +160,6 @@ RETURN
          INNER JOIN RESERVATIONS r ON su.reservation_id = r.reservation_id
          WHERE r.customer_id = c.customer_id) AS total_service_spending,
         
-        -- Average rating given
-        (SELECT ISNULL(AVG(CAST(rv.rating AS DECIMAL(3,2))), 0) 
-         FROM REVIEWS rv 
-         WHERE rv.customer_id = c.customer_id) AS avg_rating_given,
-        
         -- Last visit
         (SELECT MAX(r.check_out_date) 
          FROM RESERVATIONS r 
@@ -173,8 +168,7 @@ RETURN
         -- Customer value score (custom metric)
         CAST(
             (c.total_spending / 1000) +  -- $1000 = 1 point
-            (c.loyalty_points / 100) +    -- 100 points = 1 score
-            ((SELECT COUNT(*) FROM REVIEWS rv WHERE rv.customer_id = c.customer_id) * 5)  -- Each review = 5 points
+            (c.loyalty_points / 100)      -- 100 points = 1 score
             AS DECIMAL(10,2)
         ) AS customer_value_score
         
