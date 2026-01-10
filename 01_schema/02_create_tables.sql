@@ -382,7 +382,6 @@ BEGIN
         user_id INT IDENTITY(1,1) PRIMARY KEY,
         username NVARCHAR(50) NOT NULL UNIQUE,
         password_hash NVARCHAR(256) NOT NULL,
-        password_salt NVARCHAR(128) NOT NULL,
         email NVARCHAR(100) NOT NULL UNIQUE,
         
         -- Single role assignment

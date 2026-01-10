@@ -174,16 +174,18 @@ Each member has: **2 Procedures** + **2 Cursors** + **2 Views** + **2 Triggers**
 
 | Type | Name | Description |
 |------|------|-------------|
-| Procedure | `sp_create_maintenance_request` | Creates request with auto-assignment |
-| Procedure | `sp_complete_maintenance` | Completes with metrics |
-| **Cursor** | `sp_auto_assign_maintenance_tasks` | Auto-assigns tasks to available staff |
-| **Cursor** | `sp_generate_employee_shift_schedule` | Generates weekly shift schedules |
-| View | `vw_maintenance_dashboard` | Active requests with SLA status |
-| View | `vw_employee_performance` | Staff metrics and workload |
-| Trigger | `trg_room_status_history` | Tracks room status changes |
-| Trigger | `trg_high_priority_maintenance` | Alerts for urgent maintenance |
-| Function | `fn_get_available_staff` | Available staff count (used in Procedure) |
-| Function | `fn_calculate_sla_status` | SLA status calculation (used in View) |
+| Procedure | `sp_create_maintenance_request` | Tạo yêu cầu bảo trì + tự động phân công |
+| Procedure | `sp_complete_maintenance` | Hoàn thành bảo trì với metrics |
+| **Cursor** | Con trỏ 1 | Tự động phân công task chưa có người xử lý |
+| **Cursor** | Con trỏ 2 | Thống kê số task theo nhân viên |
+| View | `vw_maintenance_dashboard` | Dashboard bảo trì (**gọi fn_calculate_sla_status**) |
+| View | `vw_employee_performance` | Thống kê hiệu suất nhân viên |
+| View | `vw_maintenance_cost_statistics` | Thống kê chi phí ngày/tháng/quý/năm (**gọi fn_calculate_maintenance_cost**) |
+| Trigger | `trg_room_status_history` | Ghi lịch sử thay đổi trạng thái phòng |
+| Trigger | `trg_update_employee_availability` | Đánh dấu nhân viên bận khi giao task |
+| Trigger | `trg_restore_employee_availability` | Khôi phục trạng thái rảnh khi hoàn thành |
+| Function | `fn_calculate_sla_status` | Tính trạng thái SLA (**dùng trong View**) |
+| Function | `fn_calculate_maintenance_cost` | Tính tổng chi phí bảo trì (**dùng trong View**) |
 
 ---
 

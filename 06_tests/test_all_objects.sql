@@ -38,9 +38,9 @@ PRINT 'Testing fn_get_customer_tier:';
 SELECT dbo.fn_get_customer_tier(25000.00) AS tier_level;
 GO
 
--- Test fn_get_available_staff
-PRINT 'Testing fn_get_available_staff:';
-SELECT dbo.fn_get_available_staff(4, CAST(GETDATE() AS DATE)) AS available_maintenance_staff;
+-- Test fn_calculate_maintenance_cost (Tung)
+PRINT 'Testing fn_calculate_maintenance_cost:'
+SELECT dbo.fn_calculate_maintenance_cost(DATEFROMPARTS(YEAR(GETDATE()), 1, 1), CAST(GETDATE() AS DATE)) AS maintenance_cost_ytd;
 GO
 
 -- Test fn_calculate_total_bill (table function)
@@ -104,6 +104,11 @@ GO
 -- Test vw_employee_performance
 PRINT 'Testing vw_employee_performance:';
 SELECT TOP 5 * FROM vw_employee_performance ORDER BY employee_id;
+GO
+
+-- Test vw_maintenance_cost_statistics (Tung - gọi fn_calculate_maintenance_cost)
+PRINT 'Testing vw_maintenance_cost_statistics:';
+SELECT * FROM vw_maintenance_cost_statistics;
 GO
 
 -- =============================================
@@ -268,32 +273,14 @@ PRINT @service_output;
 GO
 
 -- =============================================
--- Tung CURSORS
+-- Tung CURSORS (Standalone - chạy trực tiếp từ file)
 -- =============================================
 PRINT '';
-PRINT '--- Tung Cursor Procedures ---';
-PRINT '';
-
--- Test sp_auto_assign_maintenance_tasks
-PRINT 'Testing sp_auto_assign_maintenance_tasks:';
-DECLARE @assign_count INT;
-DECLARE @assign_message NVARCHAR(1000);
-EXEC sp_auto_assign_maintenance_tasks
-    @assigned_count = @assign_count OUTPUT,
-    @message = @assign_message OUTPUT;
-PRINT 'Result: ' + @assign_message;
-GO
-
--- Test sp_generate_employee_shift_schedule
-PRINT '';
-PRINT 'Testing sp_generate_employee_shift_schedule:';
-DECLARE @schedule_count INT;
-DECLARE @schedule_message NVARCHAR(1000);
-EXEC sp_generate_employee_shift_schedule
-    @week_start_date = '2025-01-06',  -- A Monday
-    @schedule_count = @schedule_count OUTPUT,
-    @message = @schedule_message OUTPUT;
-PRINT 'Result: ' + @schedule_message;
+PRINT '--- Tung Cursors (standalone) ---';
+PRINT 'Tung cursors chạy từ file: 07_cursors/member4_operations_cursor.sql';
+PRINT 'Gồm 2 con trỏ:';
+PRINT '  1. Tự động phân công task chưa có người xử lý';
+PRINT '  2. Thống kê số task theo nhân viên';
 GO
 
 -- =============================================
@@ -352,7 +339,7 @@ PRINT 'Summary of Cursor Procedures Tested:';
 PRINT '  Phuc: sp_process_daily_checkins, sp_process_noshow_reservations';
 PRINT '  Khanh: sp_send_payment_reminders, sp_generate_monthly_revenue_summary';
 PRINT '  Ninh: sp_process_loyalty_tier_upgrades, sp_generate_service_usage_report';
-PRINT '  Tung: sp_auto_assign_maintenance_tasks, sp_generate_employee_shift_schedule';
+PRINT '  Tung: 2 standalone cursors (file: 07_cursors/member4_operations_cursor.sql)';
 PRINT '';
 PRINT 'Total: 8 Cursor Procedures (2 per member)';
 GO

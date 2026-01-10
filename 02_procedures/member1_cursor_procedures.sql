@@ -1,258 +1,107 @@
--- =============================================
--- Phuc: RESERVATION & ROOM MANAGEMENT
--- CURSOR PROCEDURES (2 CURSORS)
--- =============================================
--- Business Process: Complete Reservation Lifecycle
--- These cursors work with sp_create_reservation, sp_cancel_reservation,
--- vw_room_availability, vw_occupancy_statistics, trg_reservation_status_change,
--- trg_reservation_audit, fn_calculate_room_price, fn_check_room_availability
--- =============================================
-
+-- Phuc: CURSOR PROCEDURES (Simplified)
 USE HotelManagement;
 GO
 
--- =============================================
 -- CURSOR 1: sp_process_daily_checkins
--- Processes all reservations scheduled for check-in today
--- Updates room status to 'Reserved' for expected arrivals
--- Uses CURSOR to iterate through today's check-ins
--- Authorization: Receptionist+ (level 50)
--- =============================================
+-- Process today's check-ins, update room status
 CREATE OR ALTER PROCEDURE sp_process_daily_checkins
-    @user_id INT,                           -- Required: calling user for authorization
-    @processed_count INT OUTPUT,
-    @message NVARCHAR(1000) OUTPUT
+    @count INT OUTPUT
 AS
 BEGIN
     SET NOCOUNT ON;
-    
-    -- Authorization check
-    IF dbo.fn_get_user_role_level(@user_id) < 50
-    BEGIN
-        SET @message = 'Access denied. Receptionist or higher required.';
-        SET @processed_count = 0;
-        RETURN -403;
-    END
-    
-    DECLARE @reservation_id INT;
-    DECLARE @customer_id INT;
-    DECLARE @room_id INT;
-    DECLARE @room_number NVARCHAR(10);
-    DECLARE @customer_name NVARCHAR(100);
-    DECLARE @check_in_date DATE;
-    DECLARE @check_out_date DATE;
-    DECLARE @total_amount DECIMAL(10,2);
-    DECLARE @current_status NVARCHAR(20);
-    
-    SET @processed_count = 0;
-    SET @message = '';
+    DECLARE @res_id INT, @room_id INT;
+    SET @count = 0;
     
     BEGIN TRY
         BEGIN TRANSACTION;
         
-        -- CURSOR: Iterate through all confirmed reservations for today
-        DECLARE checkin_cursor CURSOR FOR
-            SELECT 
-                r.reservation_id,
-                r.customer_id,
-                r.room_id,
-                rm.room_number,
-                c.first_name + ' ' + c.last_name AS customer_name,
-                r.check_in_date,
-                r.check_out_date,
-                r.total_amount,
-                r.status
-            FROM RESERVATIONS r
-            INNER JOIN CUSTOMERS c ON r.customer_id = c.customer_id
-            INNER JOIN ROOMS rm ON r.room_id = rm.room_id
-            WHERE r.check_in_date = CAST(GETDATE() AS DATE)
-            AND r.status = 'Confirmed'
-            ORDER BY r.reservation_id;
+        -- CURSOR: Today's confirmed reservations
+        DECLARE cur CURSOR FOR
+            SELECT reservation_id, room_id FROM RESERVATIONS
+            WHERE check_in_date = CAST(GETDATE() AS DATE) AND status = 'Confirmed';
         
-        OPEN checkin_cursor;
-        FETCH NEXT FROM checkin_cursor INTO 
-            @reservation_id, @customer_id, @room_id, @room_number,
-            @customer_name, @check_in_date, @check_out_date, @total_amount, @current_status;
+        OPEN cur;
+        FETCH NEXT FROM cur INTO @res_id, @room_id;
         
         WHILE @@FETCH_STATUS = 0
         BEGIN
-            -- Update room status to Reserved
-            UPDATE ROOMS
-            SET status = 'Reserved', updated_at = GETDATE()
-            WHERE room_id = @room_id AND status = 'Available';
-            
-            SET @processed_count = @processed_count + 1;
-            
-            FETCH NEXT FROM checkin_cursor INTO 
-                @reservation_id, @customer_id, @room_id, @room_number,
-                @customer_name, @check_in_date, @check_out_date, @total_amount, @current_status;
+            -- Update room to Reserved
+            UPDATE ROOMS SET status = 'Reserved' WHERE room_id = @room_id;
+            SET @count = @count + 1;
+            FETCH NEXT FROM cur INTO @res_id, @room_id;
         END
         
-        CLOSE checkin_cursor;
-        DEALLOCATE checkin_cursor;
-        
-        COMMIT TRANSACTION;
-        
-        SET @message = 'Daily check-in processing completed. ' + 
-                       CAST(@processed_count AS NVARCHAR) + ' reservations prepared for today.';
+        CLOSE cur;
+        DEALLOCATE cur;
+        COMMIT;
         RETURN 0;
-        
     END TRY
     BEGIN CATCH
-        IF @@TRANCOUNT > 0
-            ROLLBACK TRANSACTION;
-        
-        IF CURSOR_STATUS('local', 'checkin_cursor') >= 0
-        BEGIN
-            CLOSE checkin_cursor;
-            DEALLOCATE checkin_cursor;
-        END
-        
-        SET @message = 'Error: ' + ERROR_MESSAGE();
+        IF @@TRANCOUNT > 0 ROLLBACK;
+        IF CURSOR_STATUS('local','cur') >= 0 BEGIN CLOSE cur; DEALLOCATE cur; END
         RETURN -1;
     END CATCH
 END;
 GO
 
--- =============================================
 -- CURSOR 2: sp_process_noshow_reservations
--- Processes reservations that are no-shows (didn't check in by end of day)
--- Updates status to 'NoShow', releases rooms, applies penalties
--- Uses CURSOR to iterate through no-show reservations
--- Authorization: Receptionist+ (level 50)
--- =============================================
+-- Process no-shows, apply penalty, release rooms
 CREATE OR ALTER PROCEDURE sp_process_noshow_reservations
-    @user_id INT,                           -- Required: calling user for authorization
-    @processed_count INT OUTPUT,
-    @total_penalty DECIMAL(10,2) OUTPUT,
-    @message NVARCHAR(1000) OUTPUT
+    @count INT OUTPUT,
+    @penalty DECIMAL(10,2) OUTPUT
 AS
 BEGIN
     SET NOCOUNT ON;
-    
-    -- Authorization check
-    IF dbo.fn_get_user_role_level(@user_id) < 50
-    BEGIN
-        SET @message = 'Access denied. Receptionist or higher required.';
-        SET @processed_count = 0;
-        SET @total_penalty = 0;
-        RETURN -403;
-    END
-    
-    DECLARE @reservation_id INT;
-    DECLARE @customer_id INT;
-    DECLARE @room_id INT;
-    DECLARE @room_number NVARCHAR(10);
-    DECLARE @customer_name NVARCHAR(100);
-    DECLARE @customer_email NVARCHAR(100);
-    DECLARE @total_amount DECIMAL(10,2);
-    DECLARE @paid_amount DECIMAL(10,2);
-    DECLARE @penalty_amount DECIMAL(10,2);
-    
-    SET @processed_count = 0;
-    SET @total_penalty = 0;
+    DECLARE @res_id INT, @cust_id INT, @room_id INT;
+    DECLARE @total DECIMAL(10,2), @paid DECIMAL(10,2), @pen DECIMAL(10,2);
+    SET @count = 0; SET @penalty = 0;
     
     BEGIN TRY
         BEGIN TRANSACTION;
         
-        -- CURSOR: Iterate through reservations that should have checked in yesterday but didn't
-        DECLARE noshow_cursor CURSOR FOR
-            SELECT 
-                r.reservation_id,
-                r.customer_id,
-                r.room_id,
-                rm.room_number,
-                c.first_name + ' ' + c.last_name AS customer_name,
-                c.email AS customer_email,
-                r.total_amount,
-                r.paid_amount
-            FROM RESERVATIONS r
-            INNER JOIN CUSTOMERS c ON r.customer_id = c.customer_id
-            INNER JOIN ROOMS rm ON r.room_id = rm.room_id
-            WHERE r.check_in_date < CAST(GETDATE() AS DATE)  -- Check-in date was in the past
-            AND r.status IN ('Confirmed', 'Pending')          -- Still not checked in
-            AND r.actual_check_in IS NULL                     -- Never actually checked in
-            ORDER BY r.check_in_date;
+        -- CURSOR: Past reservations not checked in
+        DECLARE cur CURSOR FOR
+            SELECT reservation_id, customer_id, room_id, total_amount, paid_amount
+            FROM RESERVATIONS
+            WHERE check_in_date < CAST(GETDATE() AS DATE)
+            AND status IN ('Confirmed','Pending') AND actual_check_in IS NULL;
         
-        OPEN noshow_cursor;
-        FETCH NEXT FROM noshow_cursor INTO 
-            @reservation_id, @customer_id, @room_id, @room_number,
-            @customer_name, @customer_email, @total_amount, @paid_amount;
+        OPEN cur;
+        FETCH NEXT FROM cur INTO @res_id, @cust_id, @room_id, @total, @paid;
         
         WHILE @@FETCH_STATUS = 0
         BEGIN
-            -- Calculate penalty (first night charge, typically)
-            SET @penalty_amount = @total_amount * 0.25;  -- 25% penalty
+            SET @pen = @total * 0.25; -- 25% penalty
             
-            -- Update reservation to NoShow
-            UPDATE RESERVATIONS
-            SET 
-                status = 'NoShow',
-                updated_at = GETDATE()
-            WHERE reservation_id = @reservation_id;
+            -- Update to NoShow
+            UPDATE RESERVATIONS SET status = 'NoShow' WHERE reservation_id = @res_id;
             
-            -- Release the room
-            UPDATE ROOMS
-            SET status = 'Available', updated_at = GETDATE()
-            WHERE room_id = @room_id AND status IN ('Reserved', 'Occupied');
+            -- Release room
+            UPDATE ROOMS SET status = 'Available' WHERE room_id = @room_id;
             
-            -- Record penalty in payments (if prepaid amount exists)
-            IF @paid_amount > 0
-            BEGIN
-                INSERT INTO PAYMENTS (
-                    reservation_id, customer_id, amount, payment_method,
-                    status, notes
-                )
-                VALUES (
-                    @reservation_id, @customer_id, -(@paid_amount - @penalty_amount), 'Refund',
-                    'Completed', 'Partial refund for no-show. Penalty: $' + CAST(@penalty_amount AS NVARCHAR)
-                );
-            END
+            -- Refund minus penalty
+            IF @paid > 0
+                INSERT INTO PAYMENTS (reservation_id, customer_id, amount, payment_method, status)
+                VALUES (@res_id, @cust_id, -(@paid - @pen), 'Refund', 'Completed');
             
-            -- Deduct loyalty points (penalty)
-            UPDATE CUSTOMERS
-            SET 
-                loyalty_points = CASE 
-                    WHEN loyalty_points >= 50 THEN loyalty_points - 50 
-                    ELSE 0 
-                END,
-                updated_at = GETDATE()
-            WHERE customer_id = @customer_id;
+            -- Deduct loyalty points
+            UPDATE CUSTOMERS SET loyalty_points = CASE WHEN loyalty_points >= 50 
+                THEN loyalty_points - 50 ELSE 0 END WHERE customer_id = @cust_id;
             
-            SET @processed_count = @processed_count + 1;
-            SET @total_penalty = @total_penalty + @penalty_amount;
-            
-            FETCH NEXT FROM noshow_cursor INTO 
-                @reservation_id, @customer_id, @room_id, @room_number,
-                @customer_name, @customer_email, @total_amount, @paid_amount;
+            SET @count = @count + 1;
+            SET @penalty = @penalty + @pen;
+            FETCH NEXT FROM cur INTO @res_id, @cust_id, @room_id, @total, @paid;
         END
         
-        CLOSE noshow_cursor;
-        DEALLOCATE noshow_cursor;
-        
-        COMMIT TRANSACTION;
-        
-        SET @message = 'No-show processing completed. ' + 
-                       CAST(@processed_count AS NVARCHAR) + ' no-shows processed. ' +
-                       'Total penalties collected: $' + CAST(@total_penalty AS NVARCHAR);
+        CLOSE cur;
+        DEALLOCATE cur;
+        COMMIT;
         RETURN 0;
-        
     END TRY
     BEGIN CATCH
-        IF @@TRANCOUNT > 0
-            ROLLBACK TRANSACTION;
-        
-        IF CURSOR_STATUS('local', 'noshow_cursor') >= 0
-        BEGIN
-            CLOSE noshow_cursor;
-            DEALLOCATE noshow_cursor;
-        END
-        
-        SET @message = 'Error: ' + ERROR_MESSAGE();
+        IF @@TRANCOUNT > 0 ROLLBACK;
+        IF CURSOR_STATUS('local','cur') >= 0 BEGIN CLOSE cur; DEALLOCATE cur; END
         RETURN -1;
     END CATCH
 END;
-GO
-
-PRINT 'Phuc Cursor Procedures created successfully.';
 GO

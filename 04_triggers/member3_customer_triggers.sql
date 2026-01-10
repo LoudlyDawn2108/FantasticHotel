@@ -1,93 +1,39 @@
--- =============================================
--- Ninh: CUSTOMER & SERVICE MANAGEMENT
--- TRIGGERS
--- =============================================
-
+-- Ninh: TRIGGERS (Simplified)
 USE HotelManagement;
 GO
 
--- =============================================
--- TRIGGER 1: trg_customer_tier_upgrade
--- Automatically upgrades membership tier when
--- points threshold is reached
--- =============================================
+-- trg_customer_tier_upgrade: Auto-upgrade tier based on spending
 CREATE OR ALTER TRIGGER trg_customer_tier_upgrade
-ON CUSTOMERS
-AFTER UPDATE
-AS
+ON CUSTOMERS AFTER UPDATE AS
 BEGIN
     SET NOCOUNT ON;
+    IF NOT UPDATE(total_spending) RETURN;
     
-    -- Only proceed if total_spending was updated
-    IF NOT UPDATE(total_spending)
-        RETURN;
+    DECLARE @cust_id INT, @spending DECIMAL(15,2), @old_tier NVARCHAR(20), @new_tier NVARCHAR(20);
     
-    DECLARE @customer_id INT;
-    DECLARE @old_tier NVARCHAR(20);
-    DECLARE @new_tier NVARCHAR(20);
-    DECLARE @new_total_spending DECIMAL(15,2);
-    DECLARE @customer_name NVARCHAR(100);
-    
-    -- Use cursor to handle multiple customer updates
-    DECLARE tier_cursor CURSOR FOR
-        SELECT 
-            i.customer_id,
-            d.membership_tier AS old_tier,
-            i.total_spending,
-            i.first_name + ' ' + i.last_name AS customer_name
-        FROM inserted i
-        INNER JOIN deleted d ON i.customer_id = d.customer_id
+    DECLARE cur CURSOR FOR
+        SELECT i.customer_id, i.total_spending, d.membership_tier 
+        FROM inserted i JOIN deleted d ON i.customer_id = d.customer_id
         WHERE i.total_spending <> d.total_spending;
     
-    OPEN tier_cursor;
-    FETCH NEXT FROM tier_cursor INTO @customer_id, @old_tier, @new_total_spending, @customer_name;
+    OPEN cur;
+    FETCH NEXT FROM cur INTO @cust_id, @spending, @old_tier;
     
     WHILE @@FETCH_STATUS = 0
     BEGIN
-        -- Calculate new tier based on total spending
-        SET @new_tier = dbo.fn_get_customer_tier(@new_total_spending);
+        SET @new_tier = CASE 
+            WHEN @spending >= 50000 THEN 'Platinum'
+            WHEN @spending >= 20000 THEN 'Gold'
+            WHEN @spending >= 5000 THEN 'Silver' ELSE 'Bronze' END;
         
-        -- Check if tier should be upgraded (not downgraded)
-        IF @new_tier <> @old_tier
-        BEGIN
-            -- Only upgrade, never downgrade
-            DECLARE @tier_order INT;
-            DECLARE @old_tier_order INT;
-            
-            SELECT @tier_order = CASE @new_tier
-                WHEN 'Bronze' THEN 1
-                WHEN 'Silver' THEN 2
-                WHEN 'Gold' THEN 3
-                WHEN 'Platinum' THEN 4
-            END;
-            
-            SELECT @old_tier_order = CASE @old_tier
-                WHEN 'Bronze' THEN 1
-                WHEN 'Silver' THEN 2
-                WHEN 'Gold' THEN 3
-                WHEN 'Platinum' THEN 4
-            END;
-            
-            IF @tier_order > @old_tier_order
-            BEGIN
-                -- Update tier (without triggering this trigger again)
-                UPDATE CUSTOMERS
-                SET membership_tier = @new_tier
-                WHERE customer_id = @customer_id
-                AND membership_tier = @old_tier;  -- Prevent recursion
-            END
-        END
+        -- Only upgrade, never downgrade
+        IF (@new_tier = 'Platinum' AND @old_tier IN ('Bronze','Silver','Gold')) OR
+           (@new_tier = 'Gold' AND @old_tier IN ('Bronze','Silver')) OR
+           (@new_tier = 'Silver' AND @old_tier = 'Bronze')
+            UPDATE CUSTOMERS SET membership_tier = @new_tier WHERE customer_id = @cust_id;
         
-        FETCH NEXT FROM tier_cursor INTO @customer_id, @old_tier, @new_total_spending, @customer_name;
+        FETCH NEXT FROM cur INTO @cust_id, @spending, @old_tier;
     END
-    
-    CLOSE tier_cursor;
-    DEALLOCATE tier_cursor;
+    CLOSE cur; DEALLOCATE cur;
 END;
-GO
-
--- Note: trg_service_usage_notification removed - was only used for notifications
--- High-value services can be tracked via views instead
-
-PRINT 'Ninh Triggers created successfully.';
 GO
