@@ -624,8 +624,7 @@ flowchart LR
     S1 -.-> O1[vw_maintenance_dashboard]
     S3 -.-> O2[sp_complete_maintenance]
     S4 -.-> O3[trg_room_status_history]
-    S6 -.-> O4[fn_calculate_room_turnaround_time]
-    S6 -.-> O5[fn_get_maintenance_statistics]
+    S6 -.-> O4[fn_calculate_sla_status]
 ```
 
 | Step | Actor | Action | Database Object |
@@ -635,7 +634,7 @@ flowchart LR
 | 3 | Maintenance Staff | Marks complete | `sp_complete_maintenance` |
 | 4 | System | Updates room status | `sp_complete_maintenance` |
 | 5 | System | Logs status change | `trg_room_status_history` |
-| 6 | System | Calculates response metrics | `fn_calculate_room_turnaround_time`, `fn_get_maintenance_statistics` |
+| 6 | System | Calculates SLA status | `fn_calculate_sla_status` (used in vw_maintenance_dashboard) |
 
 ---
 
@@ -728,9 +727,8 @@ flowchart LR
 | View | `vw_employee_performance` | Performance, Scheduling |
 | Trigger | `trg_room_status_history` | Maintenance Completion |
 | Trigger | `trg_high_priority_maintenance` | Maintenance Request |
-| Function | `fn_calculate_room_turnaround_time` | Maintenance Completion |
 | Function | `fn_get_available_staff` | Request, Scheduling |
-| Function | `fn_get_maintenance_statistics` | Maintenance Completion |
+| Function | `fn_calculate_sla_status` | Dashboard View (SLA calculation) |
 
 ---
 
@@ -752,8 +750,8 @@ flowchart LR
 | **Phuc** | 2 | 2 | 2 | 2 | 3 | 11 |
 | **Khanh** | 2 (+cursor) | 2 | 2 | 2 | 3 | 11+ |
 | **Ninh** | 2 | 2 | 2 | 2 | 3 | 11 |
-| **Tung** | 2 | 2 | 2 | 2 | 3 | 11 |
-| **TOTAL** | 8 | 8 | 8 | 8 | 12 | 44 |
+| **Tung** | 2 | 2 | 2 | 2 | 2 | 10 |
+| **TOTAL** | 8 | 8 | 8 | 8 | 11 | 43 |
 
 ## Verification Checklist
 
