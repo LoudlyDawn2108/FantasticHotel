@@ -8,10 +8,8 @@ A comprehensive SQL Server database project for a Hotel Management System, desig
 btl/
 ├── 01_schema/
 │   ├── 01_create_database.sql          # Database creation
-│   ├── 02_create_tables.sql            # Core table definitions (14 tables)
-│   ├── 03_insert_sample_data.sql       # Sample data for testing
-│   ├── 04_create_auth_tables.sql       # Authentication & Authorization (6 tables)
-│   └── 05_insert_auth_sample_data.sql  # Sample user accounts
+│   ├── 02_create_tables.sql            # All table definitions (16 tables)
+│   └── 03_insert_sample_data.sql       # All sample data
 ├── 02_procedures/
 │   ├── member1_reservation_procedures.sql
 │   ├── member1_cursor_procedures.sql   # 2 Cursors for reservations
@@ -20,7 +18,6 @@ btl/
 │   ├── member3_customer_procedures.sql
 │   ├── member3_cursor_procedures.sql   # 2 Cursors for customers
 │   ├── member4_operations_procedures.sql
-│   ├── member4_cursor_procedures.sql   # 2 Cursors for operations
 │   └── security_auth_procedures.sql    # Authentication procedures (Shared)
 ├── 03_views/
 │   ├── member1_room_views.sql
@@ -52,15 +49,13 @@ btl/
 Run the SQL files in this order:
 
 1. `01_schema/01_create_database.sql`
-2. `01_schema/02_create_tables.sql`
-3. `01_schema/03_insert_sample_data.sql`
-4. `01_schema/04_create_auth_tables.sql` ← NEW: Authentication tables
-5. `05_functions/*` (All function files including auth functions)
-6. `03_views/*`
-7. `04_triggers/*`
-8. `02_procedures/*` (All procedure files including auth procedures)
-9. `01_schema/05_insert_auth_sample_data.sql` ← NEW: Sample users
-10. `06_tests/test_all_objects.sql` (Optional - to verify everything works)
+2. `01_schema/02_create_tables.sql` (includes auth tables)
+3. `05_functions/*` (All function files)
+4. `03_views/*`
+5. `04_triggers/*`
+6. `02_procedures/*` (All procedure files)
+7. `01_schema/03_insert_sample_data.sql` (includes auth sample users)
+8. `06_tests/test_all_objects.sql` (Optional)
 
 ---
 

@@ -1,4 +1,4 @@
--- =============================================
+﻿-- =============================================
 -- HOTEL MANAGEMENT SYSTEM - SAMPLE DATA
 -- SQL Server Implementation
 -- =============================================
@@ -337,3 +337,54 @@ GO
 
 PRINT 'Sample data inserted successfully.';
 GO
+-- =============================================
+-- SAMPLE DATA FOR AUTHENTICATION TABLES
+-- Password for all users: Password123
+-- Hash generated with SHA2_256(salt + 'Password123')
+-- =============================================
+
+USE HotelManagement;
+GO
+
+-- Pre-computed salt and hash for 'Password123'
+-- Salt: 'SAMPLE_SALT_FOR_TESTING_ONLY_12345678'
+-- This is for TESTING/DEMO only, real system should use fn_hash_password
+
+DECLARE @sample_salt NVARCHAR(128) = 'SAMPLE_SALT_FOR_TESTING_ONLY_12345678';
+DECLARE @sample_hash NVARCHAR(256);
+
+-- Compute hash: SHA256(salt + 'Password123')
+SET @sample_hash = CONVERT(NVARCHAR(256), HASHBYTES('SHA2_256', @sample_salt + 'Password123'), 2);
+
+-- Get role IDs
+DECLARE @role_admin INT, @role_manager INT, @role_reception INT, @role_cashier INT, @role_guest INT;
+SELECT @role_admin = role_id FROM ROLES WHERE role_name = 'Administrator';
+SELECT @role_manager = role_id FROM ROLES WHERE role_name = 'General Manager';
+SELECT @role_reception = role_id FROM ROLES WHERE role_name = 'Receptionist';
+SELECT @role_cashier = role_id FROM ROLES WHERE role_name = 'Cashier';
+SELECT @role_guest = role_id FROM ROLES WHERE role_name = 'Guest';
+
+-- Insert sample users (if not exist)
+IF NOT EXISTS (SELECT 1 FROM USER_ACCOUNTS WHERE username = 'admin')
+    INSERT INTO USER_ACCOUNTS (username, password_hash, password_salt, email, role_id, user_type, employee_id)
+    VALUES ('admin', @sample_hash, @sample_salt, 'admin@hotel.com', @role_admin, 'Employee', 1);
+
+IF NOT EXISTS (SELECT 1 FROM USER_ACCOUNTS WHERE username = 'manager')
+    INSERT INTO USER_ACCOUNTS (username, password_hash, password_salt, email, role_id, user_type, employee_id)
+    VALUES ('manager', @sample_hash, @sample_salt, 'manager@hotel.com', @role_manager, 'Employee', 2);
+
+IF NOT EXISTS (SELECT 1 FROM USER_ACCOUNTS WHERE username = 'reception1')
+    INSERT INTO USER_ACCOUNTS (username, password_hash, password_salt, email, role_id, user_type, employee_id)
+    VALUES ('reception1', @sample_hash, @sample_salt, 'reception1@hotel.com', @role_reception, 'Employee', 3);
+
+IF NOT EXISTS (SELECT 1 FROM USER_ACCOUNTS WHERE username = 'cashier1')
+    INSERT INTO USER_ACCOUNTS (username, password_hash, password_salt, email, role_id, user_type, employee_id)
+    VALUES ('cashier1', @sample_hash, @sample_salt, 'cashier1@hotel.com', @role_cashier, 'Employee', 4);
+
+IF NOT EXISTS (SELECT 1 FROM USER_ACCOUNTS WHERE username = 'guest1')
+    INSERT INTO USER_ACCOUNTS (username, password_hash, password_salt, email, role_id, user_type, customer_id)
+    VALUES ('guest1', @sample_hash, @sample_salt, 'guest1@email.com', @role_guest, 'Customer', 1);
+
+PRINT 'Sample auth users created (Password: Password123)';
+GO
+
