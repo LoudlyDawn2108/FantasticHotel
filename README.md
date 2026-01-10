@@ -8,8 +8,10 @@ A comprehensive SQL Server database project for a Hotel Management System, desig
 btl/
 ├── 01_schema/
 │   ├── 01_create_database.sql          # Database creation
-│   ├── 02_create_tables.sql            # All table definitions (14 tables)
-│   └── 03_insert_sample_data.sql       # Sample data for testing
+│   ├── 02_create_tables.sql            # Core table definitions (14 tables)
+│   ├── 03_insert_sample_data.sql       # Sample data for testing
+│   ├── 04_create_auth_tables.sql       # Authentication & Authorization (6 tables)
+│   └── 05_insert_auth_sample_data.sql  # Sample user accounts
 ├── 02_procedures/
 │   ├── member1_reservation_procedures.sql
 │   ├── member1_cursor_procedures.sql   # 2 Cursors for reservations
@@ -18,7 +20,8 @@ btl/
 │   ├── member3_customer_procedures.sql
 │   ├── member3_cursor_procedures.sql   # 2 Cursors for customers
 │   ├── member4_operations_procedures.sql
-│   └── member4_cursor_procedures.sql   # 2 Cursors for operations
+│   ├── member4_cursor_procedures.sql   # 2 Cursors for operations
+│   └── security_auth_procedures.sql    # Authentication procedures (Shared)
 ├── 03_views/
 │   ├── member1_room_views.sql
 │   ├── member2_financial_views.sql
@@ -51,11 +54,63 @@ Run the SQL files in this order:
 1. `01_schema/01_create_database.sql`
 2. `01_schema/02_create_tables.sql`
 3. `01_schema/03_insert_sample_data.sql`
-4. `05_functions/*` (Functions first - they're used by other objects)
-5. `03_views/*`
-6. `04_triggers/*`
-7. `02_procedures/*` (All procedure files including cursor procedures)
-8. `06_tests/test_all_objects.sql` (Optional - to verify everything works)
+4. `01_schema/04_create_auth_tables.sql` ← NEW: Authentication tables
+5. `05_functions/*` (All function files including auth functions)
+6. `03_views/*`
+7. `04_triggers/*`
+8. `02_procedures/*` (All procedure files including auth procedures)
+9. `01_schema/05_insert_auth_sample_data.sql` ← NEW: Sample users
+10. `06_tests/test_all_objects.sql` (Optional - to verify everything works)
+
+---
+
+## 🔐 Authentication & Authorization (Shared Module)
+
+Simple **Role-Based Access Control** with one role per user.
+
+### Authentication Tables (2 tables)
+
+| Table | Description |
+|-------|-------------|
+| `ROLES` | System roles with access levels (10-100) |
+| `USER_ACCOUNTS` | User credentials with single role assignment |
+
+### Procedures & Functions
+
+| Type | Name | Description |
+|------|------|-------------|
+| Procedure | `sp_create_user_account` | Creates user with role |
+| Procedure | `sp_user_login` | Authenticates, returns role info |
+| Procedure | `sp_change_password` | Changes own password |
+| Procedure | `sp_change_user_role` | Changes user's role (manager+) |
+| Procedure | `sp_unlock_user` | Unlocks locked account |
+| Function | `fn_hash_password` | SHA-256 password hashing |
+| Function | `fn_user_has_role` | Checks user's role |
+| Function | `fn_user_can_access` | Checks minimum access level |
+| Function | `fn_get_user_role_level` | Gets user's access level |
+
+### Roles (Access Levels)
+
+| Role | Level | Description |
+|------|-------|-------------|
+| Administrator | 100 | Full access |
+| General Manager | 90 | All operations |
+| Managers | 70 | Department management |
+| Staff | 50 | Customer-facing roles |
+| Operational | 30 | Internal operations |
+| Guest | 10 | Self-service only |
+
+### Test Accounts (Password: `Password123`)
+
+| Username | Role | Level |
+|----------|------|-------|
+| admin | Administrator | 100 |
+| manager | General Manager | 90 |
+| reception1 | Receptionist | 50 |
+| cashier1 | Cashier | 50 |
+| guest1 | Guest | 10 |
+
+---
 
 ## 👥 Team Distribution
 
@@ -142,13 +197,16 @@ Each member has: **2 Procedures** + **2 Cursors** + **2 Views** + **2 Triggers**
 
 | Item | Count |
 |------|-------|
-| Tables | 14 |
+| Core Tables | 14 |
+| **Auth Tables** | **2** |
 | Stored Procedures | 8 |
-| **Cursor Procedures** | **8** (2 per member) |
+| **Auth Procedures** | **5** |
+| Cursor Procedures | 8 (2 per member) |
 | Views | 8 |
 | Triggers | 8 |
-| Functions | 12 |
-| **Total Objects** | **44+** |
+| Functions | 12 + 4 auth |
+| **Total Tables** | **16** |
+| **Total Objects** | **47+** |
 
 ## 💼 Business Process Integration
 
@@ -163,9 +221,12 @@ See `MEMBER_BUSINESS_PROCESS_VERIFICATION.md` for detailed process flow diagrams
 
 ## ✨ Advanced Features
 
+- **Authentication & Authorization**: Complete RBAC with roles, permissions, sessions
+- **Password Security**: SHA-256 hashing with salt, lockout after failed attempts
+- **Session Management**: Token-based sessions with expiration
 - **Transaction Handling**: All procedures use `BEGIN TRY/CATCH` with proper rollback
 - **Cursor Usage**: 8 cursor-based procedures for batch processing and complex reports
-- **Audit Logging**: Comprehensive audit trails for reservations and payments
+- **Audit Logging**: Comprehensive audit trails for reservations, payments, and logins
 - **Automatic Notifications**: Triggers create notifications for important events
 - **SLA Tracking**: Maintenance dashboard tracks SLA compliance
 - **Loyalty System**: Automatic tier upgrades and point calculations
@@ -178,9 +239,10 @@ Run `06_tests/test_all_objects.sql` to verify all objects work correctly.
 
 ## 📄 Documentation Files
 
-- `README.md` - This file
+- `README.md` - This file (overview and quick reference)
+- `USER_REQUIREMENTS.md` - Detailed user requirements and database mapping
 - `BUSINESS_PROCESSES.md` - Business process & use case documentation
-- `MEMBER_BUSINESS_PROCESS_VERIFICATION.md` - Verification that each member's objects form complete processes
+- `MEMBER_BUSINESS_PROCESS_VERIFICATION.md` - Process flow diagrams per member
 - `DATABASE_SCHEMA.dbml` - Schema code for dbdiagram.io
 
 ## 📝 License
