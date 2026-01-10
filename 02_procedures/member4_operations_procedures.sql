@@ -19,6 +19,7 @@ CREATE OR ALTER PROCEDURE sp_create_maintenance_request
     @description NVARCHAR(1000) = NULL,
     @priority NVARCHAR(20) = 'Medium',
     @estimated_cost DECIMAL(10,2) = NULL,
+    @created_by INT = NULL,
     @request_id INT OUTPUT,
     @assigned_employee NVARCHAR(100) OUTPUT,
     @message NVARCHAR(500) OUTPUT
