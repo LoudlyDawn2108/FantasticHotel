@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Báo cáo HQTCSDL - Nhóm 7</title>
+    <style>
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 13pt;
+            line-height: 1.5;
+            background-color: white;
+            color: black;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px;
+        }
+        h1 { font-size: 16pt; text-align: center; font-weight: bold; }
+        h2 { font-size: 14pt; font-weight: bold; margin-top: 20px; }
+        h3 { font-size: 13pt; font-weight: bold; margin-top: 15px; }
+        h4 { font-size: 13pt; font-weight: bold; font-style: italic; }
+        table { border-collapse: collapse; width: 100%; margin: 10px 0; }
+        th, td { border: 1px solid black; padding: 5px 8px; text-align: left; }
+        th { background-color: #f0f0f0; font-weight: bold; }
+        ul { margin: 5px 0; }
+        li { margin: 3px 0; }
+        .center { text-align: center; }
+        .code { font-family: 'Courier New', monospace; font-size: 11pt; background-color: #f5f5f5; padding: 2px 5px; }
+    </style>
+</head>
+<body>
+
+<h1>PHẦN I: THIẾT KẾ CƠ SỞ DỮ LIỆU</h1>
+
+<h2>1. Bài toán đặt ra</h2>
+
+<p>Trong ngành khách sạn hiện đại, việc quản lý vận hành thủ công gây ra nhiều bất cập như: thông tin phòng không đồng bộ, đặt phòng trùng lặp, thanh toán sai sót, và khó theo dõi lịch sử khách hàng.</p>
+
+<p><b>Hệ thống Quản lý Khách sạn (Hotel Management System - HMS)</b> được xây dựng nhằm giải quyết các vấn đề trên cho khách sạn quy mô vừa (50-200 phòng), với các mục tiêu:</p>
+
+<ul>
+    <li><b>Quản lý phòng:</b> Theo dõi trạng thái phòng (Available, Occupied, Maintenance, Cleaning), loại phòng, giá theo mùa/cuối tuần</li>
+    <li><b>Quản lý đặt phòng:</b> Tạo, sửa, hủy đặt phòng; xử lý check-in/check-out; phát hiện no-show</li>
+    <li><b>Quản lý thanh toán:</b> Xử lý thanh toán đa phương thức, hoàn tiền, theo dõi công nợ</li>
+    <li><b>Quản lý khách hàng:</b> Đăng ký khách, tích điểm, phân hạng thành viên (Bronze/Silver/Gold/Platinum)</li>
+    <li><b>Quản lý dịch vụ:</b> Ghi nhận dịch vụ sử dụng, tính chi phí dịch vụ vào hóa đơn</li>
+    <li><b>Quản lý vận hành:</b> Yêu cầu bảo trì, phân công nhân viên, theo dõi SLA</li>
+    <li><b>Quản lý nhân sự:</b> Ca làm việc, hiệu suất nhân viên</li>
+</ul>
+
+<h2>2. Quy tắc quản lý & Ràng buộc</h2>
+
+<h3>2.1. Ràng buộc khóa chính (Primary Key)</h3>
+
+<table>
+    <tr><th>Bảng</th><th>Khóa chính</th><th>Kiểu dữ liệu</th></tr>
+    <tr><td>DEPARTMENTS</td><td>department_id</td><td>INT IDENTITY(1,1)</td></tr>
+    <tr><td>SERVICE_CATEGORIES</td><td>category_id</td><td>INT IDENTITY(1,1)</td></tr>
+    <tr><td>ROOM_TYPES</td><td>type_id</td><td>INT IDENTITY(1,1)</td></tr>
+    <tr><td>CUSTOMERS</td><td>customer_id</td><td>INT IDENTITY(1,1)</td></tr>
+    <tr><td>EMPLOYEES</td><td>employee_id</td><td>INT IDENTITY(1,1)</td></tr>
+    <tr><td>ROOMS</td><td>room_id</td><td>INT IDENTITY(1,1)</td></tr>
+    <tr><td>SERVICES</td><td>service_id</td><td>INT IDENTITY(1,1)</td></tr>
+    <tr><td>RESERVATIONS</td><td>reservation_id</td><td>INT IDENTITY(1,1)</td></tr>
+    <tr><td>PAYMENTS</td><td>payment_id</td><td>INT IDENTITY(1,1)</td></tr>
+    <tr><td>SERVICES_USED</td><td>usage_id</td><td>INT IDENTITY(1,1)</td></tr>
+    <tr><td>MAINTENANCE_REQUESTS</td><td>request_id</td><td>INT IDENTITY(1,1)</td></tr>
+    <tr><td>EMPLOYEE_SHIFTS</td><td>shift_id</td><td>INT IDENTITY(1,1)</td></tr>
+    <tr><td>ROOM_STATUS_HISTORY</td><td>history_id</td><td>INT IDENTITY(1,1)</td></tr>
+    <tr><td>AUDIT_LOGS</td><td>log_id</td><td>INT IDENTITY(1,1)</td></tr>
+    <tr><td>ROLES</td><td>role_id</td><td>INT IDENTITY(1,1)</td></tr>
+    <tr><td>USER_ACCOUNTS</td><td>user_id</td><td>INT IDENTITY(1,1)</td></tr>
+</table>
+
+<h3>2.2. Ràng buộc khóa ngoại (Foreign Key)</h3>
+
+<table>
+    <tr><th>Bảng</th><th>Cột</th><th>Tham chiếu đến</th></tr>
+    <tr><td>EMPLOYEES</td><td>department_id</td><td>DEPARTMENTS(department_id)</td></tr>
+    <tr><td>ROOMS</td><td>type_id</td><td>ROOM_TYPES(type_id)</td></tr>
+    <tr><td>SERVICES</td><td>category_id</td><td>SERVICE_CATEGORIES(category_id)</td></tr>
+    <tr><td>RESERVATIONS</td><td>customer_id</td><td>CUSTOMERS(customer_id)</td></tr>
+    <tr><td>RESERVATIONS</td><td>room_id</td><td>ROOMS(room_id)</td></tr>
+    <tr><td>PAYMENTS</td><td>reservation_id</td><td>RESERVATIONS(reservation_id)</td></tr>
+    <tr><td>PAYMENTS</td><td>customer_id</td><td>CUSTOMERS(customer_id)</td></tr>
+    <tr><td>SERVICES_USED</td><td>reservation_id</td><td>RESERVATIONS(reservation_id)</td></tr>
+    <tr><td>SERVICES_USED</td><td>service_id</td><td>SERVICES(service_id)</td></tr>
+    <tr><td>MAINTENANCE_REQUESTS</td><td>room_id</td><td>ROOMS(room_id)</td></tr>
+    <tr><td>MAINTENANCE_REQUESTS</td><td>assigned_to</td><td>EMPLOYEES(employee_id)</td></tr>
+    <tr><td>EMPLOYEE_SHIFTS</td><td>employee_id</td><td>EMPLOYEES(employee_id)</td></tr>
+</table>
+
+<h3>2.3. Ràng buộc CHECK</h3>
+
+<table>
+    <tr><th>Bảng</th><th>Ràng buộc</th><th>Mô tả</th></tr>
+    <tr><td>ROOM_TYPES</td><td>base_price > 0</td><td>Giá phòng phải lớn hơn 0</td></tr>
+    <tr><td>ROOM_TYPES</td><td>capacity > 0</td><td>Sức chứa phải lớn hơn 0</td></tr>
+    <tr><td>CUSTOMERS</td><td>loyalty_points >= 0</td><td>Điểm tích lũy không âm</td></tr>
+    <tr><td>CUSTOMERS</td><td>membership_tier IN ('Bronze', 'Silver', 'Gold', 'Platinum')</td><td>Hạng thành viên hợp lệ</td></tr>
+    <tr><td>ROOMS</td><td>status IN ('Available', 'Occupied', 'Maintenance', 'Cleaning', 'Reserved')</td><td>Trạng thái phòng hợp lệ</td></tr>
+    <tr><td>RESERVATIONS</td><td>num_guests > 0</td><td>Số khách phải lớn hơn 0</td></tr>
+    <tr><td>RESERVATIONS</td><td>check_out_date > check_in_date</td><td>Ngày trả phải sau ngày nhận</td></tr>
+    <tr><td>PAYMENTS</td><td>amount > 0</td><td>Số tiền phải lớn hơn 0</td></tr>
+    <tr><td>MAINTENANCE_REQUESTS</td><td>priority IN ('Low', 'Medium', 'High', 'Critical')</td><td>Độ ưu tiên hợp lệ</td></tr>
+</table>
+
+<h3>2.4. Công thức tính toán</h3>
+
+<table>
+    <tr><th>Công thức</th><th>Mô tả</th></tr>
+    <tr><td>room_charge = base_price × nights × seasonal × weekend</td><td>Tính tiền phòng</td></tr>
+    <tr><td>discount_amount = room_charge × discount_rate</td><td>Giảm giá theo hạng</td></tr>
+    <tr><td>tax_amount = (room_charge + service_charge - discount) × 0.10</td><td>Thuế 10%</td></tr>
+    <tr><td>total_amount = room_charge + service_charge - discount + tax</td><td>Tổng hóa đơn</td></tr>
+    <tr><td>loyalty_points = (amount / 10) × tier_multiplier</td><td>Điểm tích lũy</td></tr>
+</table>
+
+<h2>3. Mô hình Thực thể - Liên kết (ER Model)</h2>
+<p><i>[Chèn ảnh sơ đồ ER - export từ dbdiagram.io bằng file DATABASE_SCHEMA.dbml]</i></p>
+
+<h2>4. Mô hình Quan hệ (Relational Model)</h2>
+
+<p><b>Nhóm Lookup:</b> DEPARTMENTS, SERVICE_CATEGORIES, ROOM_TYPES</p>
+<p><b>Nhóm Core:</b> CUSTOMERS, EMPLOYEES, ROOMS, SERVICES</p>
+<p><b>Nhóm Transactions:</b> RESERVATIONS, PAYMENTS, SERVICES_USED</p>
+<p><b>Nhóm Operations:</b> MAINTENANCE_REQUESTS, EMPLOYEE_SHIFTS</p>
+<p><b>Nhóm Audit:</b> ROOM_STATUS_HISTORY, AUDIT_LOGS</p>
+<p><b>Nhóm Security:</b> ROLES, USER_ACCOUNTS</p>
+
+<hr>
+
+<h1>PHẦN II: QUẢN TRỊ CƠ SỞ DỮ LIỆU</h1>
+
+<hr>
+
+<h2>NGUYỄN HỒNG PHÚC (Member 1): QUẢN LÝ ĐẶT PHÒNG & BÁN HÀNG</h2>
+
+<h3>1. FUNCTION</h3>
+
+<h4>1.1. fn_calculate_room_price</h4>
+<ul>
+    <li><b>Mục đích:</b> Tính giá phòng theo mùa và cuối tuần</li>
+    <li><b>Tham số:</b> @room_id INT, @checkin DATE, @checkout DATE</li>
+    <li><b>Trả về:</b> DECIMAL(10,2) - Tổng tiền phòng</li>
+    <li><b>Logic:</b> Mùa cao điểm (T6-8,12): +20%, Thấp (T1-2,11): -10%, Cuối tuần: +15%</li>
+</ul>
+
+<h4>1.2. fn_check_room_availability</h4>
+<ul>
+    <li><b>Mục đích:</b> Kiểm tra phòng có sẵn trong khoảng thời gian</li>
+    <li><b>Tham số:</b> @room_id INT, @checkin DATE, @checkout DATE</li>
+    <li><b>Trả về:</b> BIT (1=Sẵn, 0=Không sẵn)</li>
+</ul>
+
+<h4>1.3. fn_calculate_discount_rate</h4>
+<ul>
+    <li><b>Mục đích:</b> Tính tỷ lệ giảm giá dựa trên hạng thành viên</li>
+    <li><b>Tham số:</b> @tier NVARCHAR(20), @amount DECIMAL(10,2)</li>
+    <li><b>Trả về:</b> DECIMAL(5,2) - Phần trăm giảm giá</li>
+    <li><b>Logic:</b> Platinum:15%, Gold:10%, Silver:5%, Bronze:0%, Đơn>=1000$:+2%</li>
+</ul>
+
+<h3>2. VIEW</h3>
+
+<h4>2.1. vw_room_availability</h4>
+<ul>
+    <li><b>Mục đích:</b> Hiển thị tình trạng phòng real-time</li>
+    <li><b>Các cột:</b> room_id, room_number, floor, type_name, base_price, capacity, status, availability, upcoming</li>
+</ul>
+
+<h4>2.2. vw_occupancy_statistics</h4>
+<ul>
+    <li><b>Mục đích:</b> Thống kê tỷ lệ lấp đầy phòng</li>
+    <li><b>Các cột:</b> report_date, total_rooms, occupied, occupancy_pct, total_revenue</li>
+</ul>
+
+<h3>3. STORED PROCEDURE</h3>
+
+<h4>3.1. sp_create_reservation</h4>
+<ul>
+    <li><b>Mục đích:</b> Tạo đặt phòng với tính giá tự động</li>
+    <li><b>Tham số:</b> @cust_id, @room_id, @checkin, @checkout, @guests, @res_id OUTPUT</li>
+    <li><b>Transaction:</b> CÓ</li>
+    <li><b>Gọi function:</b> fn_check_room_availability</li>
+</ul>
+
+<h4>3.2. sp_cancel_reservation</h4>
+<ul>
+    <li><b>Mục đích:</b> Hủy đặt phòng với chính sách hoàn tiền</li>
+    <li><b>Tham số:</b> @res_id, @reason, @refund OUTPUT</li>
+    <li><b>Transaction:</b> CÓ</li>
+    <li><b>Logic hoàn tiền:</b> >7 ngày:100%, 3-7:75%, 1-2:50%, 0:25%</li>
+</ul>
+
+<h3>4. TRIGGER</h3>
+
+<h4>4.1. trg_reservation_status_change</h4>
+<ul>
+    <li><b>Bảng:</b> RESERVATIONS (AFTER UPDATE)</li>
+    <li><b>Mục đích:</b> Tự động cập nhật trạng thái phòng</li>
+    <li><b>Logic:</b> CheckedIn→Occupied, CheckedOut→Cleaning, Cancelled→Available</li>
+</ul>
+
+<h4>4.2. trg_reservation_audit</h4>
+<ul>
+    <li><b>Bảng:</b> RESERVATIONS (AFTER INSERT, UPDATE, DELETE)</li>
+    <li><b>Mục đích:</b> Ghi log vào AUDIT_LOGS</li>
+</ul>
+
+<h3>5. CURSOR</h3>
+
+<h4>5.1. sp_process_daily_checkins</h4>
+<ul>
+    <li><b>Mục đích:</b> Xử lý hàng loạt check-in trong ngày</li>
+    <li><b>OUTPUT:</b> @count INT</li>
+</ul>
+
+<h4>5.2. sp_process_noshow_reservations</h4>
+<ul>
+    <li><b>Mục đích:</b> Xử lý no-show và áp dụng phạt 25%</li>
+    <li><b>OUTPUT:</b> @count INT, @penalty DECIMAL</li>
+</ul>
+
+<hr>
+
+<h2>NGÔ ĐỨC NAM KHÁNH (Member 2): QUẢN LÝ THANH TOÁN & TÀI CHÍNH</h2>
+
+<h3>1. FUNCTION</h3>
+
+<h4>1.1. fn_calculate_total_bill</h4>
+<ul>
+    <li><b>Mục đích:</b> Tính hóa đơn chi tiết cho đặt phòng</li>
+    <li><b>Tham số:</b> @res_id INT</li>
+    <li><b>Trả về:</b> TABLE (reservation_id, customer_name, room_charge, service_charge, total_amount, balance_due, payment_status)</li>
+</ul>
+
+<h4>1.2. fn_calculate_loyalty_points</h4>
+<ul>
+    <li><b>Mục đích:</b> Tính điểm thưởng theo tier</li>
+    <li><b>Tham số:</b> @amount DECIMAL, @tier NVARCHAR</li>
+    <li><b>Trả về:</b> INT</li>
+    <li><b>Logic:</b> 1 điểm/$10, Platinum:2x, Gold:1.5x, Silver:1.25x</li>
+</ul>
+
+<h4>1.3. fn_get_customer_tier</h4>
+<ul>
+    <li><b>Mục đích:</b> Xác định hạng từ tổng chi tiêu</li>
+    <li><b>Logic:</b> >=50k:Platinum, >=20k:Gold, >=5k:Silver</li>
+</ul>
+
+<h3>2. VIEW</h3>
+
+<h4>2.1. vw_daily_revenue_report</h4>
+<ul>
+    <li><b>Mục đích:</b> Báo cáo doanh thu hàng ngày</li>
+    <li><b>Các cột:</b> report_date, total_payments, refunds, cash, credit_card, transactions</li>
+</ul>
+
+<h4>2.2. vw_outstanding_payments</h4>
+<ul>
+    <li><b>Mục đích:</b> Theo dõi công nợ chưa thanh toán</li>
+    <li><b>Các cột:</b> reservation_id, customer, balance, days_overdue, priority</li>
+</ul>
+
+<h3>3. STORED PROCEDURE</h3>
+
+<h4>3.1. sp_process_payment</h4>
+<ul>
+    <li><b>Mục đích:</b> Xử lý thanh toán và cộng điểm loyalty</li>
+    <li><b>Tham số:</b> @res_id, @amount, @method, @pay_id OUTPUT</li>
+    <li><b>Transaction:</b> CÓ</li>
+</ul>
+
+<h4>3.2. sp_generate_invoice</h4>
+<ul>
+    <li><b>Mục đích:</b> Tạo hóa đơn với cursor duyệt dịch vụ</li>
+    <li><b>Tham số:</b> @res_id, @invoice OUTPUT</li>
+    <li><b>Cursor:</b> Duyệt SERVICES_USED</li>
+</ul>
+
+<h3>4. TRIGGER</h3>
+
+<h4>4.1. trg_payment_loyalty_update</h4>
+<ul>
+    <li><b>Bảng:</b> PAYMENTS (AFTER INSERT)</li>
+    <li><b>Mục đích:</b> Tự động nâng hạng sau thanh toán</li>
+    <li><b>Gọi function:</b> fn_get_customer_tier</li>
+</ul>
+
+<h4>4.2. trg_payment_audit</h4>
+<ul>
+    <li><b>Bảng:</b> PAYMENTS (AFTER INSERT, UPDATE, DELETE)</li>
+    <li><b>Mục đích:</b> Ghi log giao dịch</li>
+</ul>
+
+<h3>5. CURSOR</h3>
+
+<h4>5.1. sp_send_payment_reminders</h4>
+<ul>
+    <li><b>Mục đích:</b> Thống kê công nợ cần nhắc nhở</li>
+    <li><b>OUTPUT:</b> @count, @outstanding</li>
+</ul>
+
+<h4>5.2. sp_generate_monthly_revenue_summary</h4>
+<ul>
+    <li><b>Mục đích:</b> Báo cáo doanh thu tháng</li>
+    <li><b>Cursor 1:</b> Doanh thu phòng theo loại</li>
+    <li><b>Cursor 2:</b> Doanh thu dịch vụ theo danh mục</li>
+</ul>
+
+<hr>
+
+<h2>NGUYỄN HẢI NINH (Member 3): QUẢN LÝ KHÁCH HÀNG & DỊCH VỤ</h2>
+
+<h3>1. FUNCTION</h3>
+
+<h4>1.1. fn_get_customer_discount_rate</h4>
+<ul>
+    <li><b>Mục đích:</b> Tính tỷ lệ giảm giá tổng hợp</li>
+    <li><b>Tham số:</b> @cust_id INT, @amount DECIMAL</li>
+    <li><b>Trả về:</b> DECIMAL(5,2) - Tối đa 25%</li>
+    <li><b>Logic:</b> Tier + Bonus điểm + Bonus đơn lớn</li>
+</ul>
+
+<h4>1.2. fn_get_customer_statistics</h4>
+<ul>
+    <li><b>Mục đích:</b> Thống kê toàn diện về khách hàng</li>
+    <li><b>Trả về:</b> TABLE (name, tier, points, reservations, service_spend)</li>
+</ul>
+
+<h3>2. VIEW</h3>
+
+<h4>2.1. vw_customer_history</h4>
+<ul>
+    <li><b>Mục đích:</b> Lịch sử và thống kê khách hàng</li>
+    <li><b>Các cột:</b> customer_id, name, tier, loyalty_points, total_spending, reservations, stays</li>
+</ul>
+
+<h4>2.2. vw_popular_services</h4>
+<ul>
+    <li><b>Mục đích:</b> Xếp hạng dịch vụ theo mức độ phổ biến</li>
+    <li><b>Các cột:</b> service_name, category_name, usage_count, revenue</li>
+</ul>
+
+<h3>3. STORED PROCEDURE</h3>
+
+<h4>3.1. sp_register_customer</h4>
+<ul>
+    <li><b>Mục đích:</b> Đăng ký khách mới với 100 điểm chào mừng</li>
+    <li><b>Tham số:</b> @fname, @lname, @email, @phone, @cust_id OUTPUT</li>
+    <li><b>Transaction:</b> CÓ</li>
+</ul>
+
+<h4>3.2. sp_add_service_to_reservation</h4>
+<ul>
+    <li><b>Mục đích:</b> Thêm dịch vụ và cập nhật hóa đơn</li>
+    <li><b>Tham số:</b> @res_id, @svc_id, @qty, @usage_id OUTPUT</li>
+    <li><b>Transaction:</b> CÓ</li>
+</ul>
+
+<h3>4. TRIGGER</h3>
+
+<h4>4.1. trg_customer_tier_upgrade</h4>
+<ul>
+    <li><b>Bảng:</b> CUSTOMERS (AFTER UPDATE)</li>
+    <li><b>Mục đích:</b> Tự động nâng hạng khi chi tiêu tăng</li>
+    <li><b>Logic:</b> Chỉ nâng, không hạ hạng</li>
+</ul>
+
+<h3>5. CURSOR</h3>
+
+<h4>5.1. sp_process_loyalty_tier_upgrades</h4>
+<ul>
+    <li><b>Mục đích:</b> Nâng hạng hàng loạt với điểm thưởng</li>
+    <li><b>OUTPUT:</b> @count</li>
+    <li><b>Bonus:</b> Platinum+2000, Gold+1000, Silver+500 điểm</li>
+</ul>
+
+<h4>5.2. sp_generate_service_usage_report</h4>
+<ul>
+    <li><b>Mục đích:</b> Báo cáo sử dụng dịch vụ</li>
+    <li><b>Tham số:</b> @start, @end, @output OUTPUT</li>
+</ul>
+
+<hr>
+
+<h2>NGÔ QUANG TÙNG (Member 4): QUẢN LÝ VẬN HÀNH & NHÂN SỰ</h2>
+
+<h3>1. FUNCTION</h3>
+
+<h4>1.1. fn_calculate_sla_status</h4>
+<ul>
+    <li><b>Mục đích:</b> Tính trạng thái SLA cho yêu cầu bảo trì</li>
+    <li><b>Tham số:</b> @priority, @status, @created</li>
+    <li><b>Trả về:</b> NVARCHAR(20) - On Track, At Risk, SLA Breached, Completed</li>
+    <li><b>Được gọi bởi:</b> VIEW vw_maintenance_dashboard</li>
+    <li><b>Logic SLA:</b> Critical:4h, High:12h, Medium:24h, Low:48h</li>
+</ul>
+
+<h4>1.2. fn_calculate_maintenance_cost</h4>
+<ul>
+    <li><b>Mục đích:</b> Tính tổng chi phí bảo trì theo khoảng thời gian</li>
+    <li><b>Tham số:</b> @from_date DATE, @to_date DATE</li>
+    <li><b>Trả về:</b> DECIMAL(15,2)</li>
+    <li><b>Được gọi bởi:</b> VIEW vw_maintenance_cost_statistics</li>
+</ul>
+
+<h3>2. VIEW</h3>
+
+<h4>2.1. vw_maintenance_dashboard</h4>
+<ul>
+    <li><b>Mục đích:</b> Dashboard tổng quan yêu cầu bảo trì</li>
+    <li><b>Các cột:</b> request_id, room_number, title, priority, status, assigned_to, hours_elapsed, sla_status</li>
+    <li><b>Gọi function:</b> fn_calculate_sla_status</li>
+</ul>
+
+<h4>2.2. vw_employee_performance</h4>
+<ul>
+    <li><b>Mục đích:</b> Thống kê hiệu suất nhân viên</li>
+    <li><b>Các cột:</b> employee_id, name, department_name, total_shifts, completed, tasks_done</li>
+</ul>
+
+<h4>2.3. vw_maintenance_cost_statistics</h4>
+<ul>
+    <li><b>Mục đích:</b> Thống kê chi phí bảo trì theo ngày/tuần/tháng/quý/năm</li>
+    <li><b>Các cột:</b> today_cost, week_cost, month_cost, quarter_cost, year_cost</li>
+    <li><b>Gọi function:</b> fn_calculate_maintenance_cost</li>
+</ul>
+
+<h3>3. STORED PROCEDURE</h3>
+
+<h4>3.1. sp_create_maintenance_request</h4>
+<ul>
+    <li><b>Mục đích:</b> Tạo yêu cầu bảo trì và tự động phân công nhân viên</li>
+    <li><b>Tham số:</b> @room_id, @title, @priority, @req_id OUTPUT, @assigned OUTPUT</li>
+    <li><b>Transaction:</b> CÓ</li>
+    <li><b>Logic:</b> Tìm nhân viên có ít task nhất để phân công</li>
+</ul>
+
+<h4>3.2. sp_complete_maintenance</h4>
+<ul>
+    <li><b>Mục đích:</b> Hoàn thành bảo trì và cập nhật trạng thái phòng</li>
+    <li><b>Tham số:</b> @req_id, @cost, @hours OUTPUT</li>
+    <li><b>Transaction:</b> CÓ</li>
+</ul>
+
+<h3>4. TRIGGER</h3>
+
+<h4>4.1. trg_room_status_history</h4>
+<ul>
+    <li><b>Bảng:</b> ROOMS (AFTER UPDATE)</li>
+    <li><b>Mục đích:</b> Ghi lịch sử thay đổi trạng thái phòng vào ROOM_STATUS_HISTORY</li>
+</ul>
+
+<h4>4.2. trg_update_employee_availability</h4>
+<ul>
+    <li><b>Bảng:</b> MAINTENANCE_REQUESTS (AFTER INSERT)</li>
+    <li><b>Mục đích:</b> Đánh dấu nhân viên bận khi nhận task Critical/High</li>
+</ul>
+
+<h4>4.3. trg_restore_employee_availability</h4>
+<ul>
+    <li><b>Bảng:</b> MAINTENANCE_REQUESTS (AFTER UPDATE)</li>
+    <li><b>Mục đích:</b> Khôi phục trạng thái rảnh khi hoàn thành task</li>
+</ul>
+
+<h3>5. CURSOR</h3>
+
+<h4>5.1. Cursor 1: Phân công tự động</h4>
+<ul>
+    <li><b>Mục đích:</b> Duyệt và phân công task chưa có người xử lý</li>
+    <li><b>Logic:</b> Sắp xếp theo priority, tìm nhân viên rảnh để gán</li>
+</ul>
+
+<h4>5.2. Cursor 2: Thống kê task</h4>
+<ul>
+    <li><b>Mục đích:</b> Báo cáo khối lượng công việc đội bảo trì</li>
+    <li><b>Logic:</b> Đếm số task của từng nhân viên</li>
+</ul>
+
+</body>
+</html>
