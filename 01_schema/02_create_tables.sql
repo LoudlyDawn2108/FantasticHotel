@@ -155,6 +155,8 @@ CREATE TABLE RESERVATIONS (
         REFERENCES CUSTOMERS(customer_id),
     CONSTRAINT FK_Reservations_Room FOREIGN KEY (room_id) 
         REFERENCES ROOMS(room_id),
+    CONSTRAINT FK_Reservations_CreatedBy FOREIGN KEY (created_by) 
+        REFERENCES EMPLOYEES(employee_id),
     CONSTRAINT CHK_Dates CHECK (check_out_date > check_in_date)
 );
 GO
@@ -177,7 +179,9 @@ CREATE TABLE PAYMENTS (
     CONSTRAINT FK_Payments_Reservation FOREIGN KEY (reservation_id) 
         REFERENCES RESERVATIONS(reservation_id),
     CONSTRAINT FK_Payments_Customer FOREIGN KEY (customer_id) 
-        REFERENCES CUSTOMERS(customer_id)
+        REFERENCES CUSTOMERS(customer_id),
+    CONSTRAINT FK_Payments_ProcessedBy FOREIGN KEY (processed_by) 
+        REFERENCES EMPLOYEES(employee_id)
 );
 GO
 
@@ -198,7 +202,9 @@ CREATE TABLE SERVICES_USED (
     CONSTRAINT FK_ServicesUsed_Reservation FOREIGN KEY (reservation_id) 
         REFERENCES RESERVATIONS(reservation_id),
     CONSTRAINT FK_ServicesUsed_Service FOREIGN KEY (service_id) 
-        REFERENCES SERVICES(service_id)
+        REFERENCES SERVICES(service_id),
+    CONSTRAINT FK_ServicesUsed_ServedBy FOREIGN KEY (served_by) 
+        REFERENCES EMPLOYEES(employee_id)
 );
 GO
 
@@ -226,6 +232,8 @@ CREATE TABLE MAINTENANCE_REQUESTS (
     CONSTRAINT FK_Maintenance_Room FOREIGN KEY (room_id) 
         REFERENCES ROOMS(room_id),
     CONSTRAINT FK_Maintenance_Employee FOREIGN KEY (assigned_to) 
+        REFERENCES EMPLOYEES(employee_id),
+    CONSTRAINT FK_Maintenance_CreatedBy FOREIGN KEY (created_by) 
         REFERENCES EMPLOYEES(employee_id)
 );
 GO
@@ -267,7 +275,9 @@ CREATE TABLE REVIEWS (
     CONSTRAINT FK_Reviews_Reservation FOREIGN KEY (reservation_id) 
         REFERENCES RESERVATIONS(reservation_id),
     CONSTRAINT FK_Reviews_Room FOREIGN KEY (room_id) 
-        REFERENCES ROOMS(room_id)
+        REFERENCES ROOMS(room_id),
+    CONSTRAINT FK_Reviews_RespondedBy FOREIGN KEY (responded_by) 
+        REFERENCES EMPLOYEES(employee_id)
 );
 GO
 
@@ -285,7 +295,9 @@ CREATE TABLE ROOM_STATUS_HISTORY (
     changed_by INT,
     reason NVARCHAR(500),
     CONSTRAINT FK_RoomHistory_Room FOREIGN KEY (room_id) 
-        REFERENCES ROOMS(room_id)
+        REFERENCES ROOMS(room_id),
+    CONSTRAINT FK_RoomHistory_ChangedBy FOREIGN KEY (changed_by) 
+        REFERENCES EMPLOYEES(employee_id)
 );
 GO
 
