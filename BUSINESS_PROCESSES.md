@@ -264,12 +264,12 @@ flowchart LR
 2. Receptionist checks room availability for desired dates
 3. System calculates room price (with seasonal/weekend rates)
 4. System applies customer discount (based on membership tier)
-5. Receptionist creates reservation
-6. System confirms reservation and updates room status
+5. Receptionist creates reservation with deposit payment (minimum 30% of total)
+6. System validates deposit, confirms reservation (status = Confirmed) and updates room status
 7. System sends confirmation notification
 
 **Database Objects Used:**
-- `sp_create_reservation` - Creates reservation with validation
+- `sp_create_reservation` - Creates reservation with 30% minimum deposit validation
 - `fn_check_room_availability` - Checks room availability
 - `fn_calculate_room_price` - Calculates dynamic pricing
 - `fn_calculate_discount_rate` - Applies membership discounts
@@ -282,7 +282,7 @@ flowchart LR
 ```mermaid
 flowchart LR
     A[Guest Arrives] --> B[Verify Reservation]
-    B --> C[Collect Deposit]
+    B --> C[Verify Deposit Paid]
     C --> D[Update Status to CheckedIn]
     D --> E[Update Room to Occupied]
     E --> F[Issue Room Key]
@@ -292,7 +292,7 @@ flowchart LR
 **Process Steps:**
 1. Guest arrives at front desk
 2. Receptionist verifies reservation details
-3. Receptionist collects deposit/payment
+3. Receptionist confirms deposit was paid at booking
 4. System updates reservation status to "CheckedIn"
 5. System updates room status to "Occupied"
 6. System triggers notification to relevant departments

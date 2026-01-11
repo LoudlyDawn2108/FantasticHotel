@@ -42,7 +42,6 @@ Trong ngành khách sạn hiện đại, việc quản lý vận hành thủ cô
 | ROOM_STATUS_HISTORY | history_id | INT IDENTITY(1,1) |
 | AUDIT_LOGS | log_id | INT IDENTITY(1,1) |
 | ROLES | role_id | INT IDENTITY(1,1) |
-| USER_ACCOUNTS | user_id | INT IDENTITY(1,1) |
 
 ### 2.2. Ràng buộc khóa ngoại (Foreign Key)
 
@@ -147,10 +146,11 @@ Trong ngành khách sạn hiện đại, việc quản lý vận hành thủ cô
 ### 3. STORED PROCEDURE
 
 #### 3.1. sp_create_reservation
-- **Mục đích**: Tạo đặt phòng với tính giá tự động
-- **Tham số**: @cust_id, @room_id, @checkin, @checkout, @guests, @res_id OUTPUT
+- **Mục đích**: Tạo đặt phòng với đặt cọc tối thiểu 30%
+- **Tham số**: @cust_id, @room_id, @checkin, @checkout, @guests, @deposit, @res_id OUTPUT
 - **Transaction**: CÓ
-- **Gọi function**: fn_check_room_availability
+- **Gọi function**: fn_check_room_availability, fn_calculate_room_price, fn_calculate_discount_rate
+- **Ràng buộc**: deposit >= total_amount * 0.30
 
 #### 3.2. sp_cancel_reservation
 - **Mục đích**: Hủy đặt phòng với chính sách hoàn tiền

@@ -33,7 +33,7 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM ROOMS WHERE room_id = @room_id AND is_active = 1 AND status <> 'Maintenance')
         RETURN 0;
     IF EXISTS (SELECT 1 FROM RESERVATIONS WHERE room_id = @room_id 
-        AND status IN ('Pending','Confirmed','CheckedIn')
+        AND status IN ('Confirmed','CheckedIn')
         AND check_in_date < @checkout AND check_out_date > @checkin)
         RETURN 0;
     RETURN 1;
