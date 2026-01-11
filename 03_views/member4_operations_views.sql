@@ -88,5 +88,5 @@ SELECT
     YEAR(GETDATE()) AS current_year;                    -- Năm hiện tại
 GO
 
-PRINT 'Tung: Đã tạo 3 view thành công!';
+PRINT N'Tung: Đã tạo 3 view thành công!';
 GO

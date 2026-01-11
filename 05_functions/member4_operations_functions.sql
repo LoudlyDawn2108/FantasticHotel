@@ -59,10 +59,10 @@ BEGIN
     WHERE status = 'Completed'
     AND completed_at >= @from_date 
     AND completed_at < DATEADD(DAY, 1, @to_date);
-    
+
     RETURN @total;
 END;
 GO
 
-PRINT 'Tung: Đã tạo 2 hàm thành công!';
+PRINT N'Tung: Đã tạo 2 hàm thành công!';
 GO

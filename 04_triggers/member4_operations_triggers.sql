@@ -26,11 +26,11 @@ BEGIN
         i.status,                   -- Trạng thái mới
         GETDATE(),                  -- Thời điểm thay đổi
         CASE i.status               -- Lý do thay đổi
-            WHEN 'Occupied' THEN 'Khách đã nhận phòng'
-            WHEN 'Cleaning' THEN 'Cần dọn dẹp'
-            WHEN 'Available' THEN 'Phòng sẵn sàng'
-            WHEN 'Maintenance' THEN 'Cần bảo trì'
-            ELSE 'Thay đổi trạng thái' 
+            WHEN 'Occupied' THEN N'Khách đã nhận phòng'
+            WHEN 'Cleaning' THEN N'Cần dọn dẹp'
+            WHEN 'Available' THEN N'Phòng sẵn sàng'
+            WHEN 'Maintenance' THEN N'Cần bảo trì'
+            ELSE N'Thay đổi trạng thái'
         END
     FROM inserted i 
     JOIN deleted d ON i.room_id = d.room_id 
@@ -80,5 +80,5 @@ BEGIN
 END;
 GO
 
-PRINT 'Tung: Đã tạo 3 trigger thành công!';
+PRINT N'Tung: Đã tạo 3 trigger thành công!';
 GO
