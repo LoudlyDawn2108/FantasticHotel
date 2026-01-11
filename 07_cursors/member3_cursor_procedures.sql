@@ -30,10 +30,6 @@ BEGIN
                 WHEN @spending >= 20000 THEN 'Gold'
                 WHEN @spending >= 5000 THEN 'Silver' ELSE 'Bronze' END;
             
-            -- Only upgrade (not downgrade)
-            IF (@new_tier = 'Platinum' AND @tier IN ('Bronze','Silver','Gold')) OR
-               (@new_tier = 'Gold' AND @tier IN ('Bronze','Silver')) OR
-               (@new_tier = 'Silver' AND @tier = 'Bronze')
             BEGIN
                 UPDATE CUSTOMERS SET membership_tier = @new_tier,
                     loyalty_points = loyalty_points + CASE @new_tier 
