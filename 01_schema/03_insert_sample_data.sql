@@ -96,37 +96,37 @@ GO
 -- EMPLOYEES DATA
 -- =============================================
 
-INSERT INTO EMPLOYEES (department_id, first_name, last_name, email, phone, position, salary, hire_date) VALUES
+INSERT INTO EMPLOYEES (department_id, first_name, last_name, email, phone, salary, hire_date) VALUES
 -- Front Desk
-(1, 'Anna', 'Johnson', 'anna.johnson@hotel.com', '555-0101', 'Front Desk Manager', 4500.00, '2020-03-15'),
-(1, 'Michael', 'Brown', 'michael.brown@hotel.com', '555-0102', 'Receptionist', 2800.00, '2021-06-20'),
-(1, 'Sarah', 'Davis', 'sarah.davis@hotel.com', '555-0103', 'Receptionist', 2800.00, '2022-01-10'),
-(1, 'David', 'Wilson', 'david.wilson@hotel.com', '555-0104', 'Night Auditor', 3000.00, '2021-09-05'),
+(1, 'Anna', 'Johnson', 'anna.johnson@hotel.com', '555-0101', 4500.00, '2020-03-15'),
+(1, 'Michael', 'Brown', 'michael.brown@hotel.com', '555-0102', 2800.00, '2021-06-20'),
+(1, 'Sarah', 'Davis', 'sarah.davis@hotel.com', '555-0103', 2800.00, '2022-01-10'),
+(1, 'David', 'Wilson', 'david.wilson@hotel.com', '555-0104', 3000.00, '2021-09-05'),
 
 -- Housekeeping
-(2, 'Maria', 'Garcia', 'maria.garcia@hotel.com', '555-0201', 'Housekeeping Supervisor', 3500.00, '2019-08-12'),
-(2, 'Carlos', 'Martinez', 'carlos.martinez@hotel.com', '555-0202', 'Room Attendant', 2200.00, '2022-04-18'),
-(2, 'Linda', 'Anderson', 'linda.anderson@hotel.com', '555-0203', 'Room Attendant', 2200.00, '2022-07-25'),
-(2, 'James', 'Taylor', 'james.taylor@hotel.com', '555-0204', 'Room Attendant', 2200.00, '2023-02-14'),
+(2, 'Maria', 'Garcia', 'maria.garcia@hotel.com', '555-0201', 3500.00, '2019-08-12'),
+(2, 'Carlos', 'Martinez', 'carlos.martinez@hotel.com', '555-0202', 2200.00, '2022-04-18'),
+(2, 'Linda', 'Anderson', 'linda.anderson@hotel.com', '555-0203', 2200.00, '2022-07-25'),
+(2, 'James', 'Taylor', 'james.taylor@hotel.com', '555-0204', 2200.00, '2023-02-14'),
 
 -- Food & Beverage
-(3, 'Robert', 'Thomas', 'robert.thomas@hotel.com', '555-0301', 'F&B Manager', 5000.00, '2018-11-20'),
-(3, 'Jennifer', 'White', 'jennifer.white@hotel.com', '555-0302', 'Chef', 4200.00, '2019-05-30'),
-(3, 'William', 'Harris', 'william.harris@hotel.com', '555-0303', 'Waiter', 2500.00, '2021-12-08'),
-(3, 'Lisa', 'Clark', 'lisa.clark@hotel.com', '555-0304', 'Bartender', 2800.00, '2022-03-22'),
+(3, 'Robert', 'Thomas', 'robert.thomas@hotel.com', '555-0301', 5000.00, '2018-11-20'),
+(3, 'Jennifer', 'White', 'jennifer.white@hotel.com', '555-0302', 4200.00, '2019-05-30'),
+(3, 'William', 'Harris', 'william.harris@hotel.com', '555-0303', 2500.00, '2021-12-08'),
+(3, 'Lisa', 'Clark', 'lisa.clark@hotel.com', '555-0304', 2800.00, '2022-03-22'),
 
 -- Maintenance
-(4, 'John', 'Lewis', 'john.lewis@hotel.com', '555-0401', 'Maintenance Manager', 4000.00, '2017-06-15'),
-(4, 'Richard', 'Lee', 'richard.lee@hotel.com', '555-0402', 'Technician', 3200.00, '2020-09-10'),
-(4, 'Thomas', 'Walker', 'thomas.walker@hotel.com', '555-0403', 'Technician', 3200.00, '2021-04-05'),
+(4, 'John', 'Lewis', 'john.lewis@hotel.com', '555-0401', 4000.00, '2017-06-15'),
+(4, 'Richard', 'Lee', 'richard.lee@hotel.com', '555-0402', 3200.00, '2020-09-10'),
+(4, 'Thomas', 'Walker', 'thomas.walker@hotel.com', '555-0403', 3200.00, '2021-04-05'),
 
 -- Security
-(5, 'Daniel', 'Hall', 'daniel.hall@hotel.com', '555-0501', 'Security Manager', 3800.00, '2018-02-28'),
-(5, 'Mark', 'Allen', 'mark.allen@hotel.com', '555-0502', 'Security Officer', 2600.00, '2020-10-15'),
+(5, 'Daniel', 'Hall', 'daniel.hall@hotel.com', '555-0501', 3800.00, '2018-02-28'),
+(5, 'Mark', 'Allen', 'mark.allen@hotel.com', '555-0502', 2600.00, '2020-10-15'),
 
 -- Management
-(6, 'Elizabeth', 'King', 'elizabeth.king@hotel.com', '555-0601', 'General Manager', 8000.00, '2015-01-10'),
-(6, 'Christopher', 'Wright', 'christopher.wright@hotel.com', '555-0602', 'Assistant Manager', 5500.00, '2017-09-22');
+(6, 'Elizabeth', 'King', 'elizabeth.king@hotel.com', '555-0601', 8000.00, '2015-01-10'),
+(6, 'Christopher', 'Wright', 'christopher.wright@hotel.com', '555-0602', 5500.00, '2017-09-22');
 GO
 
 -- =============================================
@@ -323,52 +323,6 @@ INSERT INTO EMPLOYEE_SHIFTS (employee_id, shift_date, start_time, end_time, stat
 GO
 
 GO
--- =============================================
--- SAMPLE DATA FOR AUTHENTICATION TABLES
--- Password for all users: Password123
--- Hash generated with SHA2_256(salt + 'Password123')
--- =============================================
 
-USE HotelManagement;
+PRINT 'Sample data inserted successfully.';
 GO
-
--- Pre-computed hash for 'Password123'
--- This is for TESTING/DEMO only, real system should use proper password hashing
-
-DECLARE @sample_hash NVARCHAR(256);
-
--- Compute hash: SHA256('Password123')
-SET @sample_hash = CONVERT(NVARCHAR(256), HASHBYTES('SHA2_256', 'Password123'), 2);
-
--- Get role IDs
-DECLARE @role_admin INT, @role_manager INT, @role_reception INT, @role_cashier INT, @role_guest INT;
-SELECT @role_admin = role_id FROM ROLES WHERE role_name = 'Administrator';
-SELECT @role_manager = role_id FROM ROLES WHERE role_name = 'General Manager';
-SELECT @role_reception = role_id FROM ROLES WHERE role_name = 'Receptionist';
-SELECT @role_cashier = role_id FROM ROLES WHERE role_name = 'Cashier';
-SELECT @role_guest = role_id FROM ROLES WHERE role_name = 'Guest';
-
--- Insert sample users (if not exist)
-IF NOT EXISTS (SELECT 1 FROM USER_ACCOUNTS WHERE username = 'admin')
-    INSERT INTO USER_ACCOUNTS (username, password_hash, email, role_id, user_type, employee_id)
-    VALUES ('admin', @sample_hash, 'admin@hotel.com', @role_admin, 'Employee', 1);
-
-IF NOT EXISTS (SELECT 1 FROM USER_ACCOUNTS WHERE username = 'manager')
-    INSERT INTO USER_ACCOUNTS (username, password_hash, email, role_id, user_type, employee_id)
-    VALUES ('manager', @sample_hash, 'manager@hotel.com', @role_manager, 'Employee', 2);
-
-IF NOT EXISTS (SELECT 1 FROM USER_ACCOUNTS WHERE username = 'reception1')
-    INSERT INTO USER_ACCOUNTS (username, password_hash, email, role_id, user_type, employee_id)
-    VALUES ('reception1', @sample_hash, 'reception1@hotel.com', @role_reception, 'Employee', 3);
-
-IF NOT EXISTS (SELECT 1 FROM USER_ACCOUNTS WHERE username = 'cashier1')
-    INSERT INTO USER_ACCOUNTS (username, password_hash, email, role_id, user_type, employee_id)
-    VALUES ('cashier1', @sample_hash, 'cashier1@hotel.com', @role_cashier, 'Employee', 4);
-
-IF NOT EXISTS (SELECT 1 FROM USER_ACCOUNTS WHERE username = 'guest1')
-    INSERT INTO USER_ACCOUNTS (username, password_hash, email, role_id, user_type, customer_id)
-    VALUES ('guest1', @sample_hash, 'guest1@email.com', @role_guest, 'Customer', 1);
-
-PRINT 'Sample auth users created (Password: Password123)';
-GO
-
