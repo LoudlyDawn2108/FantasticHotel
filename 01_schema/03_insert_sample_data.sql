@@ -322,6 +322,25 @@ INSERT INTO EMPLOYEE_SHIFTS (employee_id, shift_date, start_time, end_time, stat
 (17, '2024-12-28', '18:00', '06:00', 'Scheduled');
 GO
 
+-- Sửa về tháng 1/2026 (hiện tại)
+UPDATE MAINTENANCE_REQUESTS 
+SET completed_at = '2026-01-08 14:00:00',
+    created_at = '2026-01-08 09:00:00',
+    started_at = '2026-01-08 10:00:00'
+WHERE request_id = 1;
+
+UPDATE MAINTENANCE_REQUESTS 
+SET completed_at = '2026-01-09 17:00:00',
+    created_at = '2026-01-09 14:00:00',
+    started_at = '2026-01-09 15:00:00'
+WHERE request_id = 2;
+
+UPDATE MAINTENANCE_REQUESTS 
+SET completed_at = '2026-01-10 12:30:00',
+    created_at = '2026-01-10 11:00:00',
+    started_at = '2026-01-10 12:00:00'
+WHERE request_id = 3;
+
 GO
 
 PRINT 'Sample data inserted successfully.';
