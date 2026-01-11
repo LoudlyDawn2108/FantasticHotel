@@ -24,16 +24,11 @@ BEGIN
         END
         
         -- Calculate price
-        SET @nights = DATEDIFF(DAY, @checkin, @checkout);
-        SELECT @price = rt.base_price * @nights
-        FROM ROOMS r JOIN ROOM_TYPES rt ON r.type_id = rt.type_id
-        WHERE r.room_id = @room_id;
+        SET @price = dbo.fn_calculate_room_price(@room_id, @checkin, @checkout)
         
         -- Get discount by tier
         SELECT @tier = membership_tier FROM CUSTOMERS WHERE customer_id = @cust_id;
-        SET @discount = CASE @tier 
-            WHEN 'Platinum' THEN 0.15 WHEN 'Gold' THEN 0.10 
-            WHEN 'Silver' THEN 0.05 ELSE 0 END;
+        SET @discount = dbo.fn_calculate_discount_rate(@tier, @price);
         
         SET @tax = @price * (1 - @discount) * 0.10;
         SET @total = @price * (1 - @discount) + @tax;
