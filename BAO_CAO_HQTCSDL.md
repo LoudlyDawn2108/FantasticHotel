@@ -145,6 +145,11 @@ Trong ngành khách sạn hiện đại, việc quản lý vận hành thủ cô
 - **Transaction**: CÓ
 - **Gọi function**: fn_check_room_availability, fn_calculate_room_price, fn_get_customer_discount_rate (Member 3)
 - **Ràng buộc**: deposit >= total_amount * 0.30
+- **Xử lý đồng thời (Concurrency)**:
+  - Sử dụng `UPDLOCK, ROWLOCK, HOLDLOCK` trên bảng ROOMS trước khi kiểm tra
+  - `UPDLOCK`: Ngăn giao dịch khác đặt cùng phòng (chống race condition)
+  - `ROWLOCK`: Chỉ khóa 1 row, không ảnh hưởng phòng khác
+  - `HOLDLOCK`: Giữ khóa đến khi COMMIT (tương đương SERIALIZABLE)
 
 #### 3.2. sp_cancel_reservation
 - **Mục đích**: Hủy đặt phòng với chính sách hoàn tiền

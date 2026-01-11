@@ -17,6 +17,9 @@ BEGIN
     
     BEGIN TRY
         BEGIN TRANSACTION;
+        SELECT @exists = 1 
+        FROM ROOMS WITH (UPDLOCK, ROWLOCK, HOLDLOCK)
+        WHERE room_id = @room_id;
         IF dbo.fn_check_room_availability(@room_id, @checkin, @checkout) = 0
         BEGIN
             ROLLBACK; RETURN -1;
