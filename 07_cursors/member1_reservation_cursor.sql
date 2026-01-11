@@ -7,7 +7,6 @@ GO
 
 -- =============================================
 -- CURSOR 1: Process today's check-ins
--- Purpose: Update room status for confirmed reservations checking in today
 -- =============================================
 DECLARE @res_id INT;
 DECLARE @room_id INT;
@@ -15,7 +14,6 @@ DECLARE @cust_name NVARCHAR(100);
 DECLARE @room_number NVARCHAR(10);
 DECLARE @count INT = 0;
 
--- Step 1: Declare cursor - get today's confirmed reservations
 DECLARE checkin_cursor CURSOR FOR
     SELECT 
         r.reservation_id,
@@ -29,16 +27,12 @@ DECLARE checkin_cursor CURSOR FOR
     AND r.status = 'Confirmed'
     ORDER BY r.reservation_id;
 
--- Step 2: Open cursor
 OPEN checkin_cursor;
 
--- Step 3: Fetch first row
 FETCH NEXT FROM checkin_cursor INTO @res_id, @room_id, @cust_name, @room_number;
 
--- Step 4: Loop through rows
 WHILE @@FETCH_STATUS = 0
 BEGIN
-    -- Update room to Reserved
     UPDATE ROOMS SET status = 'Reserved', updated_at = GETDATE()
     WHERE room_id = @room_id AND status = 'Available';
     
@@ -47,7 +41,6 @@ BEGIN
           N' - Room ' + @room_number + 
           N' - Guest: ' + @cust_name + N' - Ready for check-in';
     
-    -- Fetch next row
     FETCH NEXT FROM checkin_cursor INTO @res_id, @room_id, @cust_name, @room_number;
 END
 
@@ -74,7 +67,6 @@ DECLARE @penalty DECIMAL(10,2);
 DECLARE @count INT = 0;
 DECLARE @total_penalty DECIMAL(10,2) = 0;
 
--- Declare cursor - get reservations that should have checked in but didn't
 DECLARE noshow_cursor CURSOR FOR
     SELECT 
         r.reservation_id,
@@ -99,18 +91,14 @@ FETCH NEXT FROM noshow_cursor INTO @res_id, @cust_id, @room_id, @cust_name, @roo
 -- Loop through each no-show
 WHILE @@FETCH_STATUS = 0
 BEGIN
-    -- Calculate 25% penalty
     SET @penalty = @total * 0.25;
     
-    -- Update reservation to NoShow
     UPDATE RESERVATIONS SET status = 'NoShow', updated_at = GETDATE()
     WHERE reservation_id = @res_id;
     
-    -- Release the room
     UPDATE ROOMS SET status = 'Available', updated_at = GETDATE()
     WHERE room_id = @room_id AND status IN ('Reserved', 'Occupied');
     
-    -- Process refund minus penalty (if prepaid)
     IF @paid > 0
     BEGIN
         INSERT INTO PAYMENTS (reservation_id, customer_id, amount, payment_method, status, notes)
@@ -118,7 +106,6 @@ BEGIN
                 'No-show refund minus ' + CAST(@penalty AS NVARCHAR) + ' penalty');
     END
     
-    -- Deduct loyalty points as penalty
     UPDATE CUSTOMERS SET loyalty_points = CASE WHEN loyalty_points >= 50 THEN loyalty_points - 50 ELSE 0 END
     WHERE customer_id = @cust_id;
     
@@ -133,7 +120,6 @@ BEGIN
     FETCH NEXT FROM noshow_cursor INTO @res_id, @cust_id, @room_id, @cust_name, @room_number, @total, @paid;
 END
 
--- Close and deallocate
 CLOSE noshow_cursor;
 DEALLOCATE noshow_cursor;
 

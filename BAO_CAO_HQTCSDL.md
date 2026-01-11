@@ -127,12 +127,6 @@ Trong ngành khách sạn hiện đại, việc quản lý vận hành thủ cô
 - **Tham số**: @room_id INT, @checkin DATE, @checkout DATE
 - **Trả về**: BIT (1=Sẵn, 0=Không sẵn)
 
-#### 1.3. fn_calculate_discount_rate
-- **Mục đích**: Tính tỷ lệ giảm giá dựa trên hạng thành viên
-- **Tham số**: @tier NVARCHAR(20), @amount DECIMAL(10,2)
-- **Trả về**: DECIMAL(5,2) - Phần trăm giảm giá
-- **Logic**: Platinum:15%, Gold:10%, Silver:5%, Bronze:0%, Đơn>=1000$:+2%
-
 ### 2. VIEW
 
 #### 2.1. vw_room_availability
@@ -149,7 +143,7 @@ Trong ngành khách sạn hiện đại, việc quản lý vận hành thủ cô
 - **Mục đích**: Tạo đặt phòng với đặt cọc tối thiểu 30%
 - **Tham số**: @cust_id, @room_id, @checkin, @checkout, @guests, @deposit, @res_id OUTPUT
 - **Transaction**: CÓ
-- **Gọi function**: fn_check_room_availability, fn_calculate_room_price, fn_calculate_discount_rate
+- **Gọi function**: fn_check_room_availability, fn_calculate_room_price, fn_get_customer_discount_rate (Member 3)
 - **Ràng buộc**: deposit >= total_amount * 0.30
 
 #### 3.2. sp_cancel_reservation

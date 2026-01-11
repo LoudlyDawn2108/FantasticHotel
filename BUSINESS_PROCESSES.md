@@ -272,7 +272,7 @@ flowchart LR
 - `sp_create_reservation` - Creates reservation with 30% minimum deposit validation
 - `fn_check_room_availability` - Checks room availability
 - `fn_calculate_room_price` - Calculates dynamic pricing
-- `fn_calculate_discount_rate` - Applies membership discounts
+- `fn_get_customer_discount_rate` - Applies membership + loyalty discounts (Member 3)
 - `vw_room_availability` - Shows available rooms
 
 ---

@@ -39,13 +39,3 @@ BEGIN
     RETURN 1;
 END;
 GO
-
--- fn_calculate_discount_rate: Tier-based discount
-CREATE OR ALTER FUNCTION fn_calculate_discount_rate(@tier NVARCHAR(20), @amount DECIMAL(10,2))
-RETURNS DECIMAL(5,2) AS
-BEGIN
-    DECLARE @rate DECIMAL(5,2) = CASE @tier WHEN 'Platinum' THEN 15 WHEN 'Gold' THEN 10 WHEN 'Silver' THEN 5 ELSE 0 END;
-    IF @amount >= 1000 SET @rate = @rate + 2;
-    RETURN @rate;
-END;
-GO
