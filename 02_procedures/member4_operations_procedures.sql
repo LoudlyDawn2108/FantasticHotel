@@ -25,9 +25,9 @@ BEGIN
         -- Bắt đầu transaction
         BEGIN TRANSACTION;
         
-        -- Kiểm tra phòng có tồn tại không
+        -- Kiểm tra phòng có tồn tại không (UPDLOCK vì sẽ UPDATE sau)
         SELECT @room_num = room_number, @status = status 
-        FROM ROOMS WHERE room_id = @room_id;
+        FROM ROOMS WITH (UPDLOCK, ROWLOCK) WHERE room_id = @room_id;
         
         IF @room_num IS NULL 
         BEGIN 
@@ -52,9 +52,9 @@ BEGIN
         ORDER BY ISNULL(mr.cnt, 0), e.hire_date;
         
         -- Lấy tên nhân viên được giao
-        SELECT @assigned = ISNULL(first_name + ' ' + last_name, 'Chưa phân công') 
+        SELECT @assigned = ISNULL(first_name + ' ' + last_name, N'Chưa phân công')
         FROM EMPLOYEES WHERE employee_id = @emp_id;
-        IF @assigned IS NULL SET @assigned = 'Chưa phân công';
+        IF @assigned IS NULL SET @assigned = N'Chưa phân công';
         
         -- Tạo yêu cầu bảo trì
         INSERT INTO MAINTENANCE_REQUESTS (room_id, assigned_to, title, priority, status)
@@ -97,9 +97,9 @@ BEGIN
         -- Bắt đầu transaction
         BEGIN TRANSACTION;
         
-        -- Lấy thông tin yêu cầu
+        -- Lấy thông tin yêu cầu (UPDLOCK vì sẽ UPDATE sau)
         SELECT @status = status, @room_id = room_id, @created = created_at
-        FROM MAINTENANCE_REQUESTS WHERE request_id = @req_id;
+        FROM MAINTENANCE_REQUESTS WITH (UPDLOCK, ROWLOCK) WHERE request_id = @req_id;
         
         -- Kiểm tra trạng thái hợp lệ
         IF @status IN ('Completed','Cancelled') 

@@ -58,6 +58,17 @@ graph TB
 | **Maintenance Staff** | Technician | Handles room repairs and maintenance requests |
 | **Cashier** | Payment Handler | Processes payments and issues invoices |
 
+### 2.3 System Calculation Formulas (Codebase Implementation)
+
+| Formula | Description | SQL Logic (Code Representation) |
+|---------|-------------|---------------------------------|
+| **Room Charge** | `fn_calculate_room_price` | `BasePrice * CASE MONTH(@date) WHEN 12,6,7,8 THEN 1.2 WHEN 1,2,11 THEN 0.9 ELSE 1.0 END * CASE DATEPART(WEEKDAY,@date) WHEN 6,7 THEN 1.15 ELSE 1.0 END` |
+| **Discount Rate** | `fn_get_customer_discount_rate` | `(CASE @tier WHEN 'Platinum' THEN 15 WHEN 'Gold' THEN 10 WHEN 'Silver' THEN 5 ELSE 0 END) + (CASE WHEN @points >= 5000 THEN 5 ELSE FLOOR(@points/1000) END) + (IF @amount >= 1000 THEN 2 ELSE 0)` |
+| **Tax Amount** | `sp_create_reservation` | `(@price * (1 - @discount) * 0.10)` <br> *Note: Code currently implements `(1 - @discount)` using percentage as whole number (bug).* |
+| **Loyalty Points** | `fn_calculate_loyalty_points` | `FLOOR((@amount/10) * CASE @tier WHEN 'Platinum' THEN 2.0 WHEN 'Gold' THEN 1.5 WHEN 'Silver' THEN 1.25 ELSE 1.0 END) + CASE WHEN @amount >= 1000 THEN 100 WHEN @amount >= 500 THEN 50 ELSE 0 END` |
+| **Refund Amount** | `sp_cancel_reservation` | `PaidAmount * CASE WHEN @days > 7 THEN 1.0 WHEN @days >= 3 THEN 0.75 WHEN @days >= 1 THEN 0.5 WHEN @days = 0 THEN 0.25 ELSE 0 END` |
+| **Maintenance SLA** | `fn_calculate_sla_status` | `CASE WHEN @prio='Critical' AND @hours>4 THEN 'SLA Breached' WHEN @prio='High' AND @hours>12 THEN 'SLA Breached' WHEN @prio='Medium' AND @hours>24 THEN 'SLA Breached' ELSE ... END` |
+
 ### 2.2 Administrative Actors
 
 | Actor | Role | Description |

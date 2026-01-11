@@ -44,6 +44,9 @@ FETCH NEXT FROM maintenance_cursor INTO @request_id, @room_number, @title, @prio
 -- Bước 4: Duyệt qua từng dòng
 WHILE @@FETCH_STATUS = 0
 BEGIN
+    -- Reset biến trước khi tìm (tránh giữ giá trị cũ nếu không tìm được)
+    SET @assigned_to = NULL;
+    
     -- Tìm nhân viên bảo trì đang rảnh
     SELECT TOP 1 @assigned_to = employee_id
     FROM EMPLOYEES
