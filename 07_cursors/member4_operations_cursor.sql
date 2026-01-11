@@ -9,14 +9,9 @@ GO
 -- CON TRỎ 1: Duyệt và phân công task chưa có người xử lý
 -- Mục đích: Tự động phân công yêu cầu bảo trì cho nhân viên rảnh
 -- =============================================
-DECLARE @request_id INT;
-DECLARE @room_number NVARCHAR(10);
-DECLARE @title NVARCHAR(200);
-DECLARE @priority NVARCHAR(20);
-DECLARE @assigned_to INT;
 
 -- Bước 1: Khai báo con trỏ - lấy các yêu cầu chưa được phân công
-DECLARE maintenance_cursor CURSOR FOR
+DECLARE maintenance_cursor CURSOR DYNAMIC SCROLL FOR
     SELECT 
         mr.request_id,
         r.room_number,
@@ -33,6 +28,12 @@ DECLARE maintenance_cursor CURSOR FOR
             WHEN 'Medium' THEN 3 
             ELSE 4 
         END;
+
+DECLARE @request_id INT;
+DECLARE @room_number NVARCHAR(10);
+DECLARE @title NVARCHAR(200);
+DECLARE @priority NVARCHAR(20);
+DECLARE @assigned_to INT;
 
 -- Bước 2: Mở con trỏ
 OPEN maintenance_cursor;
@@ -83,9 +84,6 @@ GO
 -- CON TRỎ 2: Thống kê số task theo từng nhân viên
 -- Mục đích: Báo cáo khối lượng công việc của đội bảo trì
 -- =============================================
-DECLARE @emp_id INT;
-DECLARE @emp_name NVARCHAR(100);
-DECLARE @task_count INT;
 
 -- Khai báo con trỏ - lấy thống kê task theo nhân viên
 DECLARE staff_cursor CURSOR FOR
@@ -98,6 +96,10 @@ DECLARE staff_cursor CURSOR FOR
     WHERE e.department_id = (SELECT department_id FROM DEPARTMENTS WHERE department_name = 'Maintenance')
     GROUP BY e.employee_id, e.first_name, e.last_name
     ORDER BY task_count DESC;
+
+DECLARE @emp_id INT;
+DECLARE @emp_name NVARCHAR(100);
+DECLARE @task_count INT;
 
 -- Mở con trỏ
 OPEN staff_cursor;
