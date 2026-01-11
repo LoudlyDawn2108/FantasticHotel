@@ -22,8 +22,7 @@ BEGIN
         SET @pay_id = SCOPE_IDENTITY();
         UPDATE RESERVATIONS SET paid_amount = paid_amount + @amount WHERE reservation_id = @res_id;
         SELECT @tier = membership_tier FROM CUSTOMERS WHERE customer_id = @cust_id;
-        SET @points = FLOOR(@amount / 100) * 10 * 
-            CASE @tier WHEN 'Platinum' THEN 2 WHEN 'Gold' THEN 1.5 WHEN 'Silver' THEN 1.2 ELSE 1 END;
+        SET @points = dbo.fn_calculate_loyalty_points(@amount, @tier);
         UPDATE CUSTOMERS SET loyalty_points = loyalty_points + @points,
             total_spending = total_spending + @amount WHERE customer_id = @cust_id;      
         COMMIT;
