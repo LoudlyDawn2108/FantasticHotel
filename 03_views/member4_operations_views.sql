@@ -20,7 +20,7 @@ SELECT
     e.first_name + ' ' + e.last_name AS assigned_to,    -- Nhân viên được giao
     mr.created_at,                                      -- Thời điểm tạo
     DATEDIFF(HOUR, mr.created_at, ISNULL(mr.completed_at, GETDATE())) AS hours_elapsed,  -- Số giờ đã qua
-    dbo.fn_calculate_sla_status(mr.priority, mr.status, mr.created_at) AS sla_status     -- GỌI HÀM: Trạng thái SLA
+    dbo.fn_calculate_sla_status(mr.priority, mr.status, mr.created_at) AS sla_status -- GỌI HÀM: Trạng thái SLA
 FROM MAINTENANCE_REQUESTS mr
 JOIN ROOMS rm ON mr.room_id = rm.room_id
 LEFT JOIN EMPLOYEES e ON mr.assigned_to = e.employee_id;

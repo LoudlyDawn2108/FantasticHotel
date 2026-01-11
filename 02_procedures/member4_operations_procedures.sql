@@ -145,5 +145,5 @@ BEGIN
 END;
 GO
 
-PRINT 'Tung: Đã tạo 2 thủ tục thành công!';
+PRINT N'Tung: Đã tạo 2 thủ tục thành công!';
 GO
