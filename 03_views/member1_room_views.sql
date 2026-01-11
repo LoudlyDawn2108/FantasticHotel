@@ -11,7 +11,7 @@ SELECT r.room_id, r.room_number, r.floor, rt.type_name, rt.base_price, rt.capaci
         ELSE 'Available' 
     END AS availability,
     (SELECT COUNT(*) FROM RESERVATIONS res WHERE res.room_id = r.room_id 
-        AND res.status IN ('Confirmed','Pending') AND res.check_in_date > GETDATE()) AS upcoming
+        AND res.status = 'Confirmed' AND res.check_in_date > CAST(GETDATE() AS DATE)) AS upcoming
 FROM ROOMS r JOIN ROOM_TYPES rt ON r.type_id = rt.type_id WHERE r.is_active = 1;
 GO
 

@@ -2,17 +2,18 @@
 USE HotelManagement;
 GO
 
--- sp_create_reservation: Create booking with price calculation
+-- sp_create_reservation: Create booking with deposit payment
 CREATE OR ALTER PROCEDURE sp_create_reservation
     @cust_id INT, @room_id INT,
     @checkin DATE, @checkout DATE,
     @guests INT = 1,
+    @deposit DECIMAL(10,2),  -- Deposit required
     @res_id INT OUTPUT
 AS
 BEGIN
     SET NOCOUNT ON;
     DECLARE @price DECIMAL(10,2), @tax DECIMAL(10,2), @total DECIMAL(10,2);
-    DECLARE @nights INT, @tier NVARCHAR(20), @discount DECIMAL(5,2);
+    DECLARE @tier NVARCHAR(20), @discount DECIMAL(5,2);
     
     BEGIN TRY
         BEGIN TRANSACTION;
@@ -30,16 +31,26 @@ BEGIN
         SELECT @tier = membership_tier FROM CUSTOMERS WHERE customer_id = @cust_id;
         SET @discount = dbo.fn_calculate_discount_rate(@tier, @price);
         
-        SET @tax = @price * (1 - @discount) * 0.10;
-        SET @total = @price * (1 - @discount) + @tax;
+        SET @tax = @price * (1 - @discount/100) * 0.10;
+        SET @total = @price * (1 - @discount/100) + @tax;
         
-        -- Insert reservation
+        -- Validate deposit (minimum 30% of total)
+        IF @deposit < @total * 0.30
+        BEGIN
+            ROLLBACK; RETURN -2;  -- Insufficient deposit
+        END
+        
+        -- Insert reservation as Confirmed (deposit paid)
         INSERT INTO RESERVATIONS (customer_id, room_id, check_in_date, check_out_date,
-            num_guests, status, room_charge, tax_amount, discount_amount, total_amount)
+            num_guests, status, room_charge, tax_amount, discount_amount, total_amount, paid_amount)
         VALUES (@cust_id, @room_id, @checkin, @checkout,
-            @guests, 'Confirmed', @price, @tax, @price * @discount, @total);
+            @guests, 'Confirmed', @price, @tax, @price * @discount/100, @total, @deposit);
         
         SET @res_id = SCOPE_IDENTITY();
+        
+        -- Record deposit payment
+        INSERT INTO PAYMENTS (reservation_id, customer_id, amount, payment_method, status, notes)
+        VALUES (@res_id, @cust_id, @deposit, 'Credit Card', 'Completed', 'Deposit');
         
         -- Update room if checkin today
         IF @checkin = CAST(GETDATE() AS DATE)
@@ -73,7 +84,7 @@ BEGIN
                @room_id = room_id, @cust_id = customer_id
         FROM RESERVATIONS WHERE reservation_id = @res_id;
         
-        IF @status IN ('Cancelled','CheckedOut','CheckedIn')
+        IF @status NOT IN ('Confirmed')
         BEGIN
             SET @refund = 0; ROLLBACK; RETURN -1;
         END

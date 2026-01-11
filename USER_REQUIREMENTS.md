@@ -99,7 +99,7 @@ This document describes the user requirements for the **Hotel Management System 
 | `check_in_date` | DATE | Guest-selected arrival |
 | `check_out_date` | DATE | Guest-selected departure |
 | `number_of_guests` | INT | Guest input, validated against capacity |
-| `status` | NVARCHAR(20) | 'Pending' until payment confirmed |
+| `status` | NVARCHAR(20) | 'Confirmed' when 30% deposit paid at booking |
 | `total_amount` | DECIMAL(10,2) | Displayed to guest before confirmation |
 | `discount_applied` | DECIMAL(5,2) | Member discount shown to guest |
 | `special_requests` | NVARCHAR(500) | Guest preferences captured |
@@ -251,7 +251,7 @@ This document describes the user requirements for the **Hotel Management System 
 | `check_in_date` | DATE | Arrival date for availability checking |
 | `check_out_date` | DATE | Departure date for pricing calculation (nights = checkout - checkin) |
 | `number_of_guests` | INT | Guest count - validated against max_occupancy |
-| `status` | NVARCHAR(20) | Lifecycle: Pending, Confirmed, CheckedIn, CheckedOut, Cancelled |
+| `status` | NVARCHAR(20) | Lifecycle: Confirmed, CheckedIn, CheckedOut, Cancelled, NoShow |
 | `total_amount` | DECIMAL(10,2) | Calculated total: base_price × nights × seasonal factor |
 | `discount_applied` | DECIMAL(5,2) | Member discount percentage based on loyalty tier |
 | `special_requests` | NVARCHAR(500) | Guest preferences (late checkout, extra pillows) |

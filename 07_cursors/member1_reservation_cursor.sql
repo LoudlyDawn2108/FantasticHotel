@@ -88,7 +88,7 @@ DECLARE noshow_cursor CURSOR FOR
     INNER JOIN CUSTOMERS c ON r.customer_id = c.customer_id
     INNER JOIN ROOMS rm ON r.room_id = rm.room_id
     WHERE r.check_in_date < CAST(GETDATE() AS DATE)  -- Past check-in date
-    AND r.status IN ('Confirmed', 'Pending')          -- Not checked in
+    AND r.status = 'Confirmed'                        -- Not checked in
     AND r.actual_check_in IS NULL                     -- Never arrived
     ORDER BY r.check_in_date;
 
