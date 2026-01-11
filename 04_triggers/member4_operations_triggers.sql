@@ -41,18 +41,29 @@ GO
 -- =============================================
 -- TRIGGER 2: trg_update_employee_availability
 -- Mục đích: Đánh dấu nhân viên bận khi được giao task ưu tiên cao
--- Kích hoạt: Khi INSERT yêu cầu bảo trì mới
+-- Kích hoạt: Khi INSERT hoặc UPDATE (gán assigned_to) yêu cầu bảo trì
 -- =============================================
 CREATE OR ALTER TRIGGER trg_update_employee_availability
-ON MAINTENANCE_REQUESTS AFTER INSERT AS
+ON MAINTENANCE_REQUESTS AFTER INSERT, UPDATE
+AS
 BEGIN
     SET NOCOUNT ON;
     
-    -- Đánh dấu nhân viên là không rảnh nếu được giao task Critical/High
+    -- Nếu là UPDATE mà không thay đổi assigned_to → bỏ qua
+    IF EXISTS (SELECT 1 FROM deleted) AND NOT UPDATE(assigned_to)
+        RETURN;
+    
+    -- Đánh dấu nhân viên mới được giao là bận (nếu task Critical/High)
     UPDATE EMPLOYEES SET is_available = 0
     WHERE employee_id IN (
-        SELECT assigned_to FROM inserted 
-        WHERE priority IN ('Critical','High') AND assigned_to IS NOT NULL
+        SELECT i.assigned_to 
+        FROM inserted i
+        LEFT JOIN deleted d ON i.request_id = d.request_id
+        WHERE i.priority IN ('Critical','High') 
+        AND i.assigned_to IS NOT NULL
+        AND (d.request_id IS NULL                      -- INSERT mới
+             OR d.assigned_to IS NULL                  -- UPDATE từ NULL
+             OR d.assigned_to <> i.assigned_to)        -- UPDATE đổi người
     );
 END;
 GO
@@ -61,13 +72,17 @@ GO
 -- TRIGGER 3: trg_restore_employee_availability
 -- Mục đích: Khôi phục trạng thái rảnh cho nhân viên khi hoàn thành task
 -- Kích hoạt: Khi UPDATE yêu cầu bảo trì thành Completed
+-- Lưu ý: Chỉ set available khi không còn task Critical/High nào khác
 -- =============================================
 CREATE OR ALTER TRIGGER trg_restore_employee_availability
 ON MAINTENANCE_REQUESTS AFTER UPDATE AS
 BEGIN
     SET NOCOUNT ON;
     
-    -- Khôi phục trạng thái rảnh khi task hoàn thành
+    -- Chỉ xử lý khi cột status được cập nhật
+    IF NOT UPDATE(status) RETURN;
+    
+    -- Khôi phục trạng thái rảnh CHỈ KHI không còn task Critical/High nào khác đang xử lý
     UPDATE EMPLOYEES SET is_available = 1
     WHERE employee_id IN (
         SELECT i.assigned_to 
@@ -76,6 +91,13 @@ BEGIN
         WHERE i.status = 'Completed'       -- Trạng thái mới là Completed
         AND d.status <> 'Completed'        -- Trạng thái cũ khác Completed
         AND i.assigned_to IS NOT NULL
+    )
+    -- Kiểm tra không còn task Critical/High nào khác đang xử lý
+    AND NOT EXISTS (
+        SELECT 1 FROM MAINTENANCE_REQUESTS mr
+        WHERE mr.assigned_to = EMPLOYEES.employee_id
+        AND mr.status NOT IN ('Completed', 'Cancelled')
+        AND mr.priority IN ('Critical', 'High')
     );
 END;
 GO
