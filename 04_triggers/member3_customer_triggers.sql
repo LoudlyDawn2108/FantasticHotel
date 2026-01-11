@@ -37,3 +37,26 @@ BEGIN
     CLOSE cur; DEALLOCATE cur;
 END;
 GO
+
+-- trg_award_service_loyalty_points: Award loyalty points when services are used
+CREATE OR ALTER TRIGGER trg_award_service_loyalty_points
+ON SERVICES_USED AFTER INSERT, UPDATE AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    -- Only process completed services
+    IF NOT EXISTS (SELECT 1 FROM inserted WHERE status = 'Completed') RETURN;
+    
+    -- Award loyalty points: 1 point per $10 spent
+    UPDATE c
+    SET c.loyalty_points = c.loyalty_points + CAST(i.total_price / 10 AS INT)
+    FROM CUSTOMERS c
+    INNER JOIN RESERVATIONS r ON c.customer_id = r.customer_id
+    INNER JOIN inserted i ON r.reservation_id = i.reservation_id
+    WHERE i.status = 'Completed'
+      AND NOT EXISTS (
+          SELECT 1 FROM deleted d 
+          WHERE d.usage_id = i.usage_id AND d.status = 'Completed'
+      );
+END;
+GO
